@@ -9,7 +9,7 @@ function setFreshness(status) {
 
     const lower = status.toLowerCase();
     badge.className = `freshness-badge ${lower}`;
-    badge.innerText = status === "Live" ? "Live Feed" : status;
+    badge.innerText = status === "Live" ? "Live NSE Feed" : status;
 
     dot.className = `dot ${lower}`;
 }
@@ -37,7 +37,7 @@ async function loadCatchUpCard() {
             const dateObj = new Date(data.lastSeenAt);
             lastSeenText.innerText = currentAnchor === "SINCE_LAST_SEEN"
                 ? `Diff computed relative to your last visit at ${dateObj.toLocaleTimeString()}`
-                : `Diff computed relative to today's market open baseline`;
+                : `Diff computed relative to today's NSE market open baseline`;
         }
 
         // Render Active Movers
@@ -46,7 +46,10 @@ async function loadCatchUpCard() {
         if (activeCount) activeCount.innerText = movers.length;
 
         if (movers.length === 0) {
-            moversList.innerHTML = `<div class="mover-row" style="color: var(--text-muted); font-size: 13px;">No major active movers above volatility threshold in this watchlist.</div>`;
+            moversList.innerHTML = `
+                <div class="mover-row" style="color: var(--text-muted); font-size: 13px; text-align: center; justify-content: center; padding: 24px;">
+                    Your watchlist is empty or has no active movers. Use the search bar above to search & add any NSE company!
+                </div>`;
         } else {
             movers.forEach(mover => {
                 const row = document.createElement("div");
@@ -59,9 +62,14 @@ async function loadCatchUpCard() {
                     ? `<span class="catalyst-tag">${mover.catalystBadgeText}</span>`
                     : "";
 
+                const companySubtitle = mover.companyName && mover.companyName !== mover.symbol
+                    ? `<span class="company-name">${mover.companyName}</span>`
+                    : "";
+
                 row.innerHTML = `
                     <div class="mover-left">
                         <span class="symbol">${mover.symbol}</span>
+                        ${companySubtitle}
                         ${catalystHtml}
                     </div>
                     <div class="mover-right">
@@ -90,7 +98,7 @@ async function loadCatchUpCard() {
                     qRow.className = "quiet-row";
                     const formattedDelta = (qs.deltaPercent >= 0 ? "+" : "") + qs.deltaPercent.toFixed(2) + "%";
                     qRow.innerHTML = `
-                        <span class="quiet-symbol">${qs.symbol}</span>
+                        <span class="quiet-symbol">${qs.symbol} <span style="font-weight: normal; font-size: 11px; color: var(--text-muted);">(${qs.companyName || qs.symbol})</span></span>
                         <span class="quiet-price">₹${qs.currentPrice.toFixed(2)} (${formattedDelta})</span>
                     `;
                     quietList.appendChild(qRow);
@@ -113,7 +121,9 @@ async function addStockToWatchlist(symbol) {
         });
         if (res.ok) {
             const input = document.getElementById("add-stock-input");
+            const dropdown = document.getElementById("search-dropdown");
             if (input) input.value = "";
+            if (dropdown) dropdown.classList.add("hidden");
             await loadCatchUpCard();
         }
     } catch (e) {
@@ -179,13 +189,84 @@ async function loadBaskets() {
     }
 }
 
+// Live Autocomplete Search Dropdown
+let searchDebounce = null;
+async function performSearch(query) {
+    const dropdown = document.getElementById("search-dropdown");
+    if (!dropdown) return;
+
+    if (!query || query.trim().length === 0) {
+        dropdown.classList.add("hidden");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/stocks/search?q=${encodeURIComponent(query.trim())}`);
+        if (!res.ok) return;
+        const results = await res.json();
+
+        if (results.length === 0) {
+            dropdown.classList.add("hidden");
+            return;
+        }
+
+        dropdown.innerHTML = "";
+        results.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "dropdown-item";
+            div.innerHTML = `
+                <span class="dropdown-symbol">${item.symbol}</span>
+                <span class="dropdown-name">${item.companyName}</span>
+            `;
+            div.addEventListener("click", () => {
+                addStockToWatchlist(item.symbol);
+            });
+            dropdown.appendChild(div);
+        });
+        dropdown.classList.remove("hidden");
+
+    } catch (e) {
+        // silent handling
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadCatchUpCard();
     loadBaskets();
 
-    // Start auto polling for live tick stream update
+    // Auto refresh timer
     if (pollTimer) clearInterval(pollTimer);
-    pollTimer = setInterval(loadCatchUpCard, 3000);
+    pollTimer = setInterval(loadCatchUpCard, 4000);
+
+    // Search Autocomplete Events
+    const addInput = document.getElementById("add-stock-input");
+    const addBtn = document.getElementById("add-stock-btn");
+
+    if (addInput) {
+        addInput.addEventListener("input", (e) => {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => performSearch(e.target.value), 200);
+        });
+
+        addInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                addStockToWatchlist(addInput.value);
+            }
+        });
+    }
+
+    if (addBtn && addInput) {
+        addBtn.addEventListener("click", () => addStockToWatchlist(addInput.value));
+    }
+
+    // Close dropdown on click outside
+    document.addEventListener("click", (e) => {
+        const dropdown = document.getElementById("search-dropdown");
+        const wrapper = document.querySelector(".search-wrapper");
+        if (dropdown && wrapper && !wrapper.contains(e.target)) {
+            dropdown.classList.add("hidden");
+        }
+    });
 
     // Anchor Mode Buttons
     const btnLastSeen = document.getElementById("btn-last-seen");
@@ -204,17 +285,6 @@ document.addEventListener("DOMContentLoaded", () => {
             btnSinceOpen.classList.add("active");
             btnLastSeen.classList.remove("active");
             loadCatchUpCard();
-        });
-    }
-
-    // Add Stock Controls
-    const addBtn = document.getElementById("add-stock-btn");
-    const addInput = document.getElementById("add-stock-input");
-
-    if (addBtn && addInput) {
-        addBtn.addEventListener("click", () => addStockToWatchlist(addInput.value));
-        addInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") addStockToWatchlist(addInput.value);
         });
     }
 

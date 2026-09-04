@@ -1,5 +1,6 @@
 package org.example.global.growwsmartwatchlist.service;
 
+import jakarta.annotation.PostConstruct;
 import org.example.global.growwsmartwatchlist.model.Watchlist;
 import org.example.global.growwsmartwatchlist.model.WatchlistStock;
 import org.example.global.growwsmartwatchlist.repository.WatchlistRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,6 +21,17 @@ public class WatchlistService {
 
     @Autowired
     private WatchlistStockRepository watchlistStockRepository;
+
+    @PostConstruct
+    public void initDefaultWatchlist() {
+        if (watchlistRepository.count() == 0) {
+            Watchlist defaultList = createWatchlist(1L, "Primary Catch-Up List");
+            List<String> seedStocks = List.of("RELIANCE", "TCS", "INFY", "TATAMOTORS", "HDFCBANK", "ZOMATO");
+            for (String sym : seedStocks) {
+                addStock(defaultList.getId(), sym);
+            }
+        }
+    }
 
     public Watchlist createWatchlist(Long userId, String name) {
         if (userId == null || name == null || name.trim().isEmpty()) {

@@ -21,19 +21,22 @@
                 <span class="brand-name">Groww <span class="brand-tag">Catch-Up</span></span>
             </div>
 
-            <div class="search-box">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c828d" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="add-stock-input" placeholder="Search and add stock to watchlist (e.g. INFY, TCS)" />
-                <button id="add-stock-btn" class="btn-add">Add Stock</button>
+            <div class="search-wrapper">
+                <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c828d" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="add-stock-input" placeholder="Search NSE stocks (e.g. RELIANCE, TCS, ZOMATO, TATAMOTORS)" autocomplete="off" />
+                    <button id="add-stock-btn" class="btn-add">Add Stock</button>
+                </div>
+                <div id="search-dropdown" class="search-dropdown hidden"></div>
             </div>
 
             <div class="nav-right">
                 <div class="status-indicator">
                     <span id="freshness-dot" class="dot live"></span>
-                    <span id="freshness-badge" class="freshness-badge live">Live Feed</span>
+                    <span id="freshness-badge" class="freshness-badge live">Live NSE Feed</span>
                 </div>
                 <div class="user-avatar">
                     <span>AG</span>
@@ -61,7 +64,7 @@
 
             <div class="card sidebar-card">
                 <h3 class="section-title">Curated Baskets</h3>
-                <p class="sidebar-subtext">Click to load themes into Catch-Up diff engine</p>
+                <p class="sidebar-subtext">Click any theme to load into Catch-Up diff engine</p>
                 <div id="baskets-container" class="baskets-list">
                     <!-- Baskets injected dynamically -->
                 </div>
@@ -74,8 +77,8 @@
                 <!-- Catch-Up Header Controls -->
                 <div class="catchup-header">
                     <div>
-                        <h1 class="catchup-title">Catch-Up <span class="badge-beta">High Signal</span></h1>
-                        <p class="catchup-subtitle" id="last-seen-text">Surfacing market diffs since your last session</p>
+                        <h1 class="catchup-title">Catch-Up <span class="badge-beta">NSE Live</span></h1>
+                        <p class="catchup-subtitle" id="last-seen-text">Surfacing real market diffs since your last session</p>
                     </div>
 
                     <div class="anchor-toggle">
@@ -113,7 +116,7 @@
     </main>
 
     <footer class="footer">
-        <p>Groww Smart Watchlist — Catch-Up Engine &bull; Built for Code 2026</p>
+        <p>Groww Smart Watchlist — Live NSE Catch-Up Engine &bull; Code 2026</p>
     </footer>
 
     <script src="app.js"></script>
