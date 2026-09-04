@@ -2,31 +2,120 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Catch-Up — Smart Market Watchlist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groww Catch-Up — Smart Market Diff Watchlist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="app">
-        <div class="catchup-card">
-            <div class="catchup-header">
-                <h2>Catch-Up</h2>
-                <div class="header-right">
-                    <span id="freshness-badge" class="freshness-badge live">Live</span>
+    <!-- Top Navigation Bar (Groww Style) -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="brand">
+                <svg class="brand-logo" width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect width="28" height="28" rx="8" fill="#00D09C"/>
+                    <path d="M7 19L12 13L16 16L21 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="brand-name">Groww <span class="brand-tag">Catch-Up</span></span>
+            </div>
+
+            <div class="search-box">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c828d" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="add-stock-input" placeholder="Search and add stock to watchlist (e.g. INFY, TCS)" />
+                <button id="add-stock-btn" class="btn-add">Add Stock</button>
+            </div>
+
+            <div class="nav-right">
+                <div class="status-indicator">
+                    <span id="freshness-dot" class="dot live"></span>
+                    <span id="freshness-badge" class="freshness-badge live">Live Feed</span>
+                </div>
+                <div class="user-avatar">
+                    <span>AG</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="main-container">
+        <!-- Sidebar Controls & Baskets -->
+        <aside class="sidebar">
+            <div class="card sidebar-card">
+                <h3 class="section-title">My Watchlists</h3>
+                <div class="watchlist-selector">
+                    <select id="watchlist-select">
+                        <option value="1">Primary Catch-Up List</option>
+                    </select>
+                </div>
+                <div class="create-watchlist-box">
+                    <input type="text" id="new-watchlist-name" placeholder="New Watchlist Name..." />
+                    <button id="create-watchlist-btn" class="btn-secondary">+ Create</button>
+                </div>
+            </div>
+
+            <div class="card sidebar-card">
+                <h3 class="section-title">Curated Baskets</h3>
+                <p class="sidebar-subtext">Click to load themes into Catch-Up diff engine</p>
+                <div id="baskets-container" class="baskets-list">
+                    <!-- Baskets injected dynamically -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Primary Catch-Up Surface -->
+        <section class="content-area">
+            <div class="card catchup-card">
+                <!-- Catch-Up Header Controls -->
+                <div class="catchup-header">
+                    <div>
+                        <h1 class="catchup-title">Catch-Up <span class="badge-beta">High Signal</span></h1>
+                        <p class="catchup-subtitle" id="last-seen-text">Surfacing market diffs since your last session</p>
+                    </div>
+
                     <div class="anchor-toggle">
                         <button id="btn-last-seen" class="toggle-btn active">Since Last Seen</button>
                         <button id="btn-since-open" class="toggle-btn">Since Open</button>
                     </div>
                 </div>
-            </div>
-            <div id="movers-list"></div>
-            <div id="quiet-drawer" class="quiet-drawer">
-                <button id="quiet-toggle-btn" class="quiet-btn">0 quiet stocks</button>
-                <div id="quiet-content" class="quiet-content hidden">
-                    <p class="quiet-note">Stagnant / unchanged stocks recede quietly into background.</p>
+
+                <!-- Active Movers Grid / List -->
+                <div class="section-divider">
+                    <span>ACTIVE MOVERS (<span id="active-count">0</span>)</span>
+                </div>
+
+                <div id="movers-list" class="movers-list">
+                    <!-- Active movers injected dynamically -->
+                </div>
+
+                <!-- Quiet Stocks Drawer -->
+                <div id="quiet-drawer" class="quiet-drawer">
+                    <button id="quiet-toggle-btn" class="quiet-btn">
+                        <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                        <span id="quiet-count-text">0 quiet stocks</span>
+                    </button>
+                    <div id="quiet-content" class="quiet-content hidden">
+                        <p class="quiet-note">Low-volatility stocks with quiet price changes recede below noise threshold.</p>
+                        <div id="quiet-list" class="quiet-list">
+                            <!-- Quiet stock items injected dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Groww Smart Watchlist — Catch-Up Engine &bull; Built for Code 2026</p>
+    </footer>
+
     <script src="app.js"></script>
 </body>
 </html>
