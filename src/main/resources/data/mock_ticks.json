@@ -1,0 +1,14 @@
+[
+  { "symbol": "RELIANCE", "price": 2850.50, "volume": 125000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "RELIANCE", "price": 2895.00, "volume": 450000, "timestamp": "2026-09-04T10:05:00Z" },
+  { "symbol": "TCS", "price": 4120.00, "volume": 85000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "TCS", "price": 4122.50, "volume": 92000, "timestamp": "2026-09-04T10:05:00Z" },
+  { "symbol": "INFY", "price": 1820.00, "volume": 310000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "INFY", "price": 1895.75, "volume": 1200000, "timestamp": "2026-09-04T10:05:00Z" },
+  { "symbol": "TATAMOTORS", "price": 980.25, "volume": 540000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "TATAMOTORS", "price": 1045.00, "volume": 2100000, "timestamp": "2026-09-04T10:05:00Z" },
+  { "symbol": "HDFCBANK", "price": 1640.00, "volume": 230000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "HDFCBANK", "price": 1641.10, "volume": 240000, "timestamp": "2026-09-04T10:05:00Z" },
+  { "symbol": "ZOMATO", "price": 245.00, "volume": 1800000, "timestamp": "2026-09-04T10:00:00Z" },
+  { "symbol": "ZOMATO", "price": 272.50, "volume": 6500000, "timestamp": "2026-09-04T10:05:00Z" }
+]
