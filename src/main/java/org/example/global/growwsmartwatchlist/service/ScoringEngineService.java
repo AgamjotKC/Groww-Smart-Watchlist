@@ -40,4 +40,15 @@ public class ScoringEngineService {
 
         return currentVolume / (baselineAverage + EPSILON);
     }
+
+    public double calculateCompositeScore(List<Double> historicalPrices, double currentPrice,
+                                           List<Long> historicalVolumes, long currentVolume) {
+        double zScore = calculateVolatilityZScore(historicalPrices, currentPrice);
+        double volumeRatio = calculateVolumeSurgeRatio(historicalVolumes, currentVolume);
+
+        double weightZ = 0.5;
+        double weightV = 0.5;
+
+        return (zScore * weightZ) + (volumeRatio * weightV);
+    }
 }
