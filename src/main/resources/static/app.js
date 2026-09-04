@@ -1,5 +1,13 @@
 let currentAnchor = "SINCE_LAST_SEEN";
 
+function setFreshness(status) {
+    const badge = document.getElementById("freshness-badge");
+    if (!badge) return;
+
+    badge.className = `freshness-badge ${status.toLowerCase()}`;
+    badge.innerText = status;
+}
+
 async function loadCatchUpCard() {
     const moversList = document.getElementById("movers-list");
     const quietBtn = document.getElementById("quiet-toggle-btn");
@@ -7,7 +15,13 @@ async function loadCatchUpCard() {
 
     try {
         const res = await fetch(`/api/watchlists/1/delta?anchor=${currentAnchor}`);
+        if (!res.ok) {
+            setFreshness("Delayed");
+            return;
+        }
         const data = await res.json();
+
+        setFreshness("Live");
 
         moversList.innerHTML = "";
         data.activeMovers.forEach(mover => {
@@ -31,6 +45,7 @@ async function loadCatchUpCard() {
         }
     } catch (e) {
         console.error("Failed to load delta", e);
+        setFreshness("Reconnecting");
     }
 }
 
