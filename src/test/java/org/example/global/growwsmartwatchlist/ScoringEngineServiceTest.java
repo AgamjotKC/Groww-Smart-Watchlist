@@ -34,4 +34,13 @@ public class ScoringEngineServiceTest {
         assertTrue(Double.isFinite(zScore));
         assertTrue(zScore > 0);
     }
+
+    @Test
+    void testVolumeSurgeRatioCalculation() {
+        List<Long> historicalVolumes = List.of(100000L, 120000L, 110000L, 90000L);
+        long currentVolume = 315000L;
+
+        double surgeRatio = scoringEngineService.calculateVolumeSurgeRatio(historicalVolumes, currentVolume);
+        assertEquals(3.0, surgeRatio, 0.1);
+    }
 }

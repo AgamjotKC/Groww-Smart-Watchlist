@@ -27,4 +27,17 @@ public class ScoringEngineService {
 
         return Math.abs(currentPrice - mean) / (stdDev + EPSILON);
     }
+
+    public double calculateVolumeSurgeRatio(List<Long> historicalVolumes, long currentVolume) {
+        if (historicalVolumes == null || historicalVolumes.isEmpty()) {
+            return 1.0;
+        }
+        double sum = 0.0;
+        for (long v : historicalVolumes) {
+            sum += v;
+        }
+        double baselineAverage = sum / historicalVolumes.size();
+
+        return currentVolume / (baselineAverage + EPSILON);
+    }
 }
