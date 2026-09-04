@@ -20,7 +20,7 @@ public class DeltaController {
     @GetMapping("/{id}/delta")
     public ResponseEntity<DeltaResponse> getWatchlistDelta(@PathVariable Long id,
                                                           @RequestParam(required = false, defaultValue = "SINCE_LAST_SEEN") String anchor) {
-        DeltaResponse response = deltaComputationService.computeUnrankedDelta(id, anchor);
+        DeltaResponse response = deltaComputationService.computeRankedDelta(id, anchor);
         return ResponseEntity.ok(response);
     }
 }

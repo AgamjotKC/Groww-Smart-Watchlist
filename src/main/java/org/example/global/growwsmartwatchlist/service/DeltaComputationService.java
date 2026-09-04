@@ -24,7 +24,7 @@ public class DeltaComputationService {
     @Autowired
     private ScoringEngineService scoringEngineService;
 
-    public DeltaResponse computeUnrankedDelta(Long watchlistId, String anchorMode) {
+    public DeltaResponse computeRankedDelta(Long watchlistId, String anchorMode) {
         List<WatchlistStock> watchlistStocks = watchlistStockRepository.findAll().stream()
                 .filter(ws -> ws.getWatchlistId().equals(watchlistId))
                 .toList();
@@ -54,6 +54,8 @@ public class DeltaComputationService {
             );
             movers.add(mover);
         }
+
+        movers.sort((a, b) -> Double.compare(b.getCompositeScore(), a.getCompositeScore()));
 
         return new DeltaResponse(watchlistId, anchorMode != null ? anchorMode : "SINCE_LAST_SEEN", movers, 0);
     }
