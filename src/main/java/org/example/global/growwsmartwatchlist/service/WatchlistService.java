@@ -17,7 +17,11 @@ public class WatchlistService {
         if (watchlistId == null || symbol == null || symbol.trim().isEmpty()) {
             return false;
         }
-        WatchlistStock stock = new WatchlistStock(watchlistId, symbol.toUpperCase().trim(), LocalDateTime.now());
+        String formattedSymbol = symbol.toUpperCase().trim();
+        if (watchlistStockRepository.existsByWatchlistIdAndSymbol(watchlistId, formattedSymbol)) {
+            return false;
+        }
+        WatchlistStock stock = new WatchlistStock(watchlistId, formattedSymbol, LocalDateTime.now());
         watchlistStockRepository.save(stock);
         return true;
     }
