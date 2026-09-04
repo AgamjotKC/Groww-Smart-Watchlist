@@ -10,6 +10,35 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Persistent Global Market Ribbon -->
+    <div class="market-ribbon">
+        <div class="market-ribbon-container">
+            <span class="ribbon-title">MARKETS TODAY</span>
+            <div class="ribbon-ticks">
+                <div class="index-pill">
+                    <span class="index-name">NIFTY 50</span>
+                    <span class="index-val">24,852.10</span>
+                    <span class="index-chg pos">+0.45%</span>
+                </div>
+                <div class="index-pill">
+                    <span class="index-name">SENSEX</span>
+                    <span class="index-val">81,335.60</span>
+                    <span class="index-chg pos">+0.41%</span>
+                </div>
+                <div class="index-pill">
+                    <span class="index-name">BANK NIFTY</span>
+                    <span class="index-val">51,240.80</span>
+                    <span class="index-chg pos">+0.52%</span>
+                </div>
+                <div class="index-pill">
+                    <span class="index-name">INDIA VIX</span>
+                    <span class="index-val">13.15</span>
+                    <span class="index-chg neg">-1.80%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Top Navigation Bar (Groww Style) -->
     <header class="navbar">
         <div class="navbar-container">
@@ -140,6 +169,62 @@
         </section>
     </main>
 
+    <!-- Groww Quick Buy Trade Sheet Modal -->
+    <div id="buy-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-company" id="buy-company-name">Reliance Industries Ltd</div>
+                    <div class="modal-symbol-price">
+                        <span id="buy-symbol" class="modal-sym">RELIANCE</span> &bull; 
+                        <span id="buy-price" class="modal-price">₹2,850.50</span>
+                        <span id="buy-delta" class="modal-delta pos">+1.56%</span>
+                    </div>
+                </div>
+                <button id="modal-close-btn" class="modal-close">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="order-type-selector">
+                    <label class="order-type-label">Product Type</label>
+                    <div class="toggle-group">
+                        <button id="btn-delivery" class="order-type-btn active">Delivery (CNC)</button>
+                        <button id="btn-intraday" class="order-type-btn">Intraday (MIS)</button>
+                    </div>
+                </div>
+
+                <div class="modal-inputs-grid">
+                    <div class="input-group">
+                        <label>Quantity (Shares)</label>
+                        <div class="qty-control">
+                            <button id="qty-minus" class="qty-btn">-</button>
+                            <input type="number" id="buy-qty" value="1" min="1" max="10000" />
+                            <button id="qty-plus" class="qty-btn">+</button>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Price Type</label>
+                        <div class="price-type-pill">Market (NSE)</div>
+                    </div>
+                </div>
+
+                <div class="order-summary-box">
+                    <div class="summary-row">
+                        <span>Approx. Required Margin:</span>
+                        <span id="buy-total-amount" class="summary-val">₹2,850.50</span>
+                    </div>
+                    <div class="summary-subtext">Zero brokerage on Delivery orders via Groww</div>
+                </div>
+
+                <button id="btn-place-order" class="btn-buy-submit">Place Buy Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
     <footer class="footer">
         <p>Groww Smart Watchlist — Live NSE Catch-Up Engine &bull; Code 2026</p>
     </footer>
@@ -147,3 +232,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+

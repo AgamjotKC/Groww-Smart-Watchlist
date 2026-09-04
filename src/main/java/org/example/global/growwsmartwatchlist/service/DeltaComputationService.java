@@ -13,7 +13,11 @@ import org.example.global.growwsmartwatchlist.repository.WatchlistStockRepositor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -196,10 +200,17 @@ public class DeltaComputationService {
             );
         }
 
+        LocalTime nowKolkata = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+        DayOfWeek dayKolkata = LocalDate.now(ZoneId.of("Asia/Kolkata")).getDayOfWeek();
+
+        boolean isMarketOpen = (dayKolkata != DayOfWeek.SATURDAY && dayKolkata != DayOfWeek.SUNDAY)
+                            && (!nowKolkata.isBefore(LocalTime.of(9, 15)) && nowKolkata.isBefore(LocalTime.of(15, 30)));
+
         DeltaResponse response = new DeltaResponse(watchlistId, normalizedAnchor, activeMovers, quietStocks.size(), quietStocks);
         response.setLastSeenAt(lastSeenIso);
         response.setSynthesisSummary(synthesisText);
         response.setDelayedFallback(isAnyDelayed);
+        response.setMarketOpen(isMarketOpen);
 
         return response;
     }

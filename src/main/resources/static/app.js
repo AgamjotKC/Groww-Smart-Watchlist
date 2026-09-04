@@ -2,10 +2,38 @@ let currentAnchor = "SINCE_LAST_SEEN";
 let currentWatchlistId = 1;
 let pollTimer = null;
 
-function setFreshness(status, isDelayed) {
+let currentOrderSymbol = "";
+let currentOrderCompany = "";
+let currentOrderPrice = 0;
+let currentOrderDelta = 0;
+let currentOrderType = "Delivery";
+
+function isMarketOpenNow() {
+    try {
+        const now = new Date();
+        const kolkataTimeString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        const kolkataDate = new Date(kolkataTimeString);
+
+        const day = kolkataDate.getDay();
+        if (day === 0 || day === 6) return false;
+
+        const hours = kolkataDate.getHours();
+        const minutes = kolkataDate.getMinutes();
+        const timeInMins = hours * 60 + minutes;
+
+        return timeInMins >= 555 && timeInMins < 930;
+    } catch (e) {
+        return false;
+    }
+}
+
+function setFreshness(status, isDelayed, apiIsMarketOpen) {
     const badge = document.getElementById("freshness-badge");
     const dot = document.getElementById("freshness-dot");
+    const lastSeenText = document.getElementById("last-seen-text");
     if (!badge || !dot) return;
+
+    const marketOpen = apiIsMarketOpen !== undefined ? apiIsMarketOpen : isMarketOpenNow();
 
     if (isDelayed) {
         badge.className = "freshness-badge delayed";
@@ -14,11 +42,95 @@ function setFreshness(status, isDelayed) {
         return;
     }
 
-    const lower = status.toLowerCase();
-    badge.className = `freshness-badge ${lower}`;
-    badge.innerText = status === "Live" ? "Live NSE Feed" : status;
+    if (!marketOpen) {
+        badge.className = "freshness-badge market-closed";
+        badge.innerText = "⚪ Market Closed (Closing Bell: 15:30 IST)";
+        dot.className = "dot closed";
 
+        if (lastSeenText) {
+            lastSeenText.innerText = "Market closed. Session diff computed between your visit and final closing bell.";
+        }
+        return;
+    }
+
+    const lower = status ? status.toLowerCase() : "live";
+    badge.className = `freshness-badge ${lower}`;
+    badge.innerText = "🟢 Market Open • Live NSE Feed";
     dot.className = `dot ${lower}`;
+}
+
+function openBuyModal(symbol, companyName, price, deltaPercent) {
+    currentOrderSymbol = symbol;
+    currentOrderCompany = companyName || symbol;
+    currentOrderPrice = price;
+    currentOrderDelta = deltaPercent;
+    currentOrderType = "Delivery";
+
+    const compEl = document.getElementById("buy-company-name");
+    const symEl = document.getElementById("buy-symbol");
+    const priceEl = document.getElementById("buy-price");
+    const deltaEl = document.getElementById("buy-delta");
+
+    if (compEl) compEl.innerText = currentOrderCompany;
+    if (symEl) symEl.innerText = symbol;
+    if (priceEl) priceEl.innerText = `₹${price.toFixed(2)}`;
+
+    if (deltaEl) {
+        const formattedDelta = (deltaPercent >= 0 ? "+" : "") + deltaPercent.toFixed(2) + "%";
+        deltaEl.innerText = formattedDelta;
+        deltaEl.className = deltaPercent >= 0 ? "modal-delta pos" : "modal-delta neg";
+    }
+
+    const qtyInput = document.getElementById("buy-qty");
+    if (qtyInput) qtyInput.value = 1;
+
+    const btnDeliv = document.getElementById("btn-delivery");
+    const btnIntra = document.getElementById("btn-intraday");
+    if (btnDeliv && btnIntra) {
+        btnDeliv.className = "order-type-btn active";
+        btnIntra.className = "order-type-btn";
+    }
+
+    updateModalTotal();
+
+    const overlay = document.getElementById("buy-modal-overlay");
+    if (overlay) overlay.classList.remove("hidden");
+}
+
+function closeBuyModal() {
+    const overlay = document.getElementById("buy-modal-overlay");
+    if (overlay) overlay.classList.add("hidden");
+}
+
+function updateModalTotal() {
+    const qtyInput = document.getElementById("buy-qty");
+    const totalEl = document.getElementById("buy-total-amount");
+    if (!qtyInput || !totalEl) return;
+
+    let qty = parseInt(qtyInput.value, 10);
+    if (isNaN(qty) || qty < 1) qty = 1;
+    qtyInput.value = qty;
+
+    const total = qty * currentOrderPrice;
+    totalEl.innerText = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function showToast(message) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = "groww-toast";
+    toast.innerHTML = `
+        <div class="toast-icon">✓</div>
+        <div class="toast-message">${message}</div>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add("fade-out");
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
 }
 
 function getCategoryBadgeHtml(catalystBadgeText, newsUrl) {
@@ -58,13 +170,16 @@ async function loadCatchUpCard() {
         }
         const data = await res.json();
 
-        setFreshness("Live", data.isDelayedFallback);
+        setFreshness("Live", data.isDelayedFallback || data.delayedFallback, data.marketOpen !== undefined ? data.marketOpen : data.isMarketOpen);
 
         if (lastSeenText && data.lastSeenAt) {
             const dateObj = new Date(data.lastSeenAt);
-            lastSeenText.innerText = currentAnchor === "SINCE_LAST_SEEN"
-                ? `Diff computed relative to your last visit at ${dateObj.toLocaleTimeString()}`
-                : `Diff computed relative to today's NSE market open baseline`;
+            const marketOpen = data.marketOpen !== undefined ? data.marketOpen : data.isMarketOpen;
+            if (marketOpen) {
+                lastSeenText.innerText = currentAnchor === "SINCE_LAST_SEEN"
+                    ? `Diff computed relative to your last visit at ${dateObj.toLocaleTimeString()}`
+                    : `Diff computed relative to today's NSE market open baseline`;
+            }
         }
 
         if (synthesisText && data.synthesisSummary) {
@@ -80,7 +195,7 @@ async function loadCatchUpCard() {
         if (summaryActiveCount) summaryActiveCount.innerText = movers.length;
         if (summaryQuietCount) summaryQuietCount.innerText = quietCount;
 
-        // Render Active Movers with All 4 Metrics + Categorized Badges + Baseline Comparison
+        // Render Active Movers with All 4 Metrics + Categorized Badges + Baseline Comparison + Action Sheet
         moversList.innerHTML = "";
         if (movers.length === 0) {
             moversList.innerHTML = `
@@ -109,6 +224,7 @@ async function loadCatchUpCard() {
                 const anchorPriceStr = mover.anchorPrice ? `₹${mover.anchorPrice.toFixed(2)}` : "—";
                 const anchorTimeStr = mover.anchorTimeString ? mover.anchorTimeString : "";
                 const baselineComparisonText = `Was ${anchorPriceStr} at ${anchorTimeStr}`;
+                const escapedComp = (mover.companyName || mover.symbol).replace(/'/g, "\\'");
 
                 card.innerHTML = `
                     <div class="mover-top">
@@ -125,11 +241,21 @@ async function loadCatchUpCard() {
                         </div>
                     </div>
 
-                    <div class="metrics-bar">
-                        <span class="chip chip-score">Score: ${mover.compositeScore.toFixed(2)}</span>
-                        <span class="chip chip-volume">⚡ ${volSurge}x Vol</span>
-                        <span class="chip chip-zscore">📊 Z: ${zScore}</span>
-                        <span class="chip chip-range">52W: ₹${low52} - ₹${high52}</span>
+                    <div class="mover-action-row">
+                        <div class="metrics-bar">
+                            <span class="chip chip-score">Score: ${mover.compositeScore.toFixed(2)}</span>
+                            <span class="chip chip-volume">⚡ ${volSurge}x Vol</span>
+                            <span class="chip chip-zscore">📊 Z: ${zScore}</span>
+                            <span class="chip chip-range">52W: ₹${low52} - ₹${high52}</span>
+                        </div>
+                        <div class="trade-actions">
+                            <button class="btn-trade-buy" onclick="openBuyModal('${mover.symbol}', '${escapedComp}', ${mover.currentPrice}, ${mover.deltaPercent})">
+                                + Quick Buy
+                            </button>
+                            <a href="${mover.newsUrl}" target="_blank" rel="noopener noreferrer" class="btn-trade-chart">
+                                📈 Chart
+                            </a>
+                        </div>
                     </div>
 
                     <div class="catalyst-box">
@@ -405,6 +531,68 @@ document.addEventListener("DOMContentLoaded", () => {
         quietBtn.addEventListener("click", () => {
             quietContent.classList.toggle("hidden");
             quietBtn.classList.toggle("expanded");
+        });
+    }
+
+    // Quick Buy Modal Event Listeners
+    const modalClose = document.getElementById("modal-close-btn");
+    const overlay = document.getElementById("buy-modal-overlay");
+    const qtyMinus = document.getElementById("qty-minus");
+    const qtyPlus = document.getElementById("qty-plus");
+    const qtyInput = document.getElementById("buy-qty");
+    const btnDeliv = document.getElementById("btn-delivery");
+    const btnIntra = document.getElementById("btn-intraday");
+    const btnPlaceOrder = document.getElementById("btn-place-order");
+
+    if (modalClose) modalClose.addEventListener("click", closeBuyModal);
+
+    if (overlay) {
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) closeBuyModal();
+        });
+    }
+
+    if (qtyMinus && qtyInput) {
+        qtyMinus.addEventListener("click", () => {
+            let qty = parseInt(qtyInput.value, 10) || 1;
+            if (qty > 1) {
+                qtyInput.value = qty - 1;
+                updateModalTotal();
+            }
+        });
+    }
+
+    if (qtyPlus && qtyInput) {
+        qtyPlus.addEventListener("click", () => {
+            let qty = parseInt(qtyInput.value, 10) || 1;
+            qtyInput.value = qty + 1;
+            updateModalTotal();
+        });
+    }
+
+    if (qtyInput) {
+        qtyInput.addEventListener("input", updateModalTotal);
+    }
+
+    if (btnDeliv && btnIntra) {
+        btnDeliv.addEventListener("click", () => {
+            currentOrderType = "Delivery";
+            btnDeliv.classList.add("active");
+            btnIntra.classList.remove("active");
+        });
+        btnIntra.addEventListener("click", () => {
+            currentOrderType = "Intraday";
+            btnIntra.classList.add("active");
+            btnDeliv.classList.remove("active");
+        });
+    }
+
+    if (btnPlaceOrder) {
+        btnPlaceOrder.addEventListener("click", () => {
+            const qty = parseInt(qtyInput ? qtyInput.value : 1, 10) || 1;
+            const msg = `Order simulated successfully for <strong>${currentOrderSymbol}</strong> (${qty} Qty @ ₹${currentOrderPrice.toFixed(2)} - ${currentOrderType})`;
+            closeBuyModal();
+            showToast(msg);
         });
     }
 });
