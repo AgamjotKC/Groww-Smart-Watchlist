@@ -35,6 +35,8 @@ public class DeltaComputationService {
     private ScoringEngineService scoringEngineService;
 
     public DeltaResponse computeRankedDelta(Long watchlistId, String anchorMode) {
+        String normalizedAnchor = (anchorMode != null && anchorMode.equalsIgnoreCase("SINCE_OPEN")) ? "SINCE_OPEN" : "SINCE_LAST_SEEN";
+
         List<WatchlistStock> watchlistStocks = watchlistStockRepository.findAll().stream()
                 .filter(ws -> ws.getWatchlistId().equals(watchlistId))
                 .toList();
@@ -53,10 +55,15 @@ public class DeltaComputationService {
             double currentPrice = ticks.get(ticks.size() - 1).getPrice();
             long currentVolume = ticks.get(ticks.size() - 1).getVolume();
 
-            double refPrice = ticks.get(0).getPrice();
-            for (StockTick t : ticks) {
-                if (t.getTimestamp() != null && t.getTimestamp().isBefore(lastSeen.toInstant(ZoneOffset.UTC))) {
-                    refPrice = t.getPrice();
+            double refPrice;
+            if ("SINCE_OPEN".equals(normalizedAnchor)) {
+                refPrice = ticks.get(0).getPrice();
+            } else {
+                refPrice = ticks.get(0).getPrice();
+                for (StockTick t : ticks) {
+                    if (t.getTimestamp() != null && t.getTimestamp().isBefore(lastSeen.toInstant(ZoneOffset.UTC))) {
+                        refPrice = t.getPrice();
+                    }
                 }
             }
 
@@ -82,6 +89,6 @@ public class DeltaComputationService {
 
         activeMovers.sort((a, b) -> Double.compare(b.getCompositeScore(), a.getCompositeScore()));
 
-        return new DeltaResponse(watchlistId, anchorMode != null ? anchorMode : "SINCE_LAST_SEEN", activeMovers, quietCount);
+        return new DeltaResponse(watchlistId, normalizedAnchor, activeMovers, quietCount);
     }
 }
