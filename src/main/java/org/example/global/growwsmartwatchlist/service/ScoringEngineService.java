@@ -56,11 +56,13 @@ public class ScoringEngineService {
 
     public double calculateCompositeScore(List<Double> historicalPrices, double currentPrice,
                                            List<Long> historicalVolumes, long currentVolume,
-                                           double week52High, double week52Low) {
+                                           double week52High, double week52Low,
+                                           boolean hasCatalyst) {
         double zScore = calculateVolatilityZScore(historicalPrices, currentPrice);
         double volumeRatio = calculateVolumeSurgeRatio(historicalVolumes, currentVolume);
         double proximityScore = calculateLevelProximityScore(currentPrice, week52High, week52Low);
+        double catalystBoost = hasCatalyst ? 1.5 : 0.0;
 
-        return (zScore * WEIGHT_Z_SCORE) + (volumeRatio * WEIGHT_VOLUME_RATIO) + (proximityScore * WEIGHT_PROXIMITY);
+        return (zScore * WEIGHT_Z_SCORE) + (volumeRatio * WEIGHT_VOLUME_RATIO) + (proximityScore * WEIGHT_PROXIMITY) + catalystBoost;
     }
 }
