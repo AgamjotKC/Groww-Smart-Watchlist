@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/watchlists")
+@RequestMapping({"/watchlists", "/api/watchlists"})
 public class DeltaController {
 
     @Autowired
