@@ -34,6 +34,30 @@ body {
     color: #ffffff;
 }
 
+.anchor-toggle {
+    display: flex;
+    background-color: #242b35;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.toggle-btn {
+    background: none;
+    border: none;
+    color: #8b949e;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toggle-btn.active {
+    background-color: #30363d;
+    color: #ffffff;
+    font-weight: 600;
+}
+
 .mover-row {
     display: flex;
     justify-content: space-between;

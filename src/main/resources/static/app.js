@@ -1,10 +1,12 @@
+let currentAnchor = "SINCE_LAST_SEEN";
+
 async function loadCatchUpCard() {
     const moversList = document.getElementById("movers-list");
     const quietBtn = document.getElementById("quiet-toggle-btn");
     if (!moversList) return;
 
     try {
-        const res = await fetch("/api/watchlists/1/delta?anchor=SINCE_LAST_SEEN");
+        const res = await fetch(`/api/watchlists/1/delta?anchor=${currentAnchor}`);
         const data = await res.json();
 
         moversList.innerHTML = "";
@@ -34,6 +36,25 @@ async function loadCatchUpCard() {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadCatchUpCard();
+
+    const btnLastSeen = document.getElementById("btn-last-seen");
+    const btnSinceOpen = document.getElementById("btn-since-open");
+
+    if (btnLastSeen && btnSinceOpen) {
+        btnLastSeen.addEventListener("click", () => {
+            currentAnchor = "SINCE_LAST_SEEN";
+            btnLastSeen.classList.add("active");
+            btnSinceOpen.classList.remove("active");
+            loadCatchUpCard();
+        });
+
+        btnSinceOpen.addEventListener("click", () => {
+            currentAnchor = "SINCE_OPEN";
+            btnSinceOpen.classList.add("active");
+            btnLastSeen.classList.remove("active");
+            loadCatchUpCard();
+        });
+    }
 
     const quietBtn = document.getElementById("quiet-toggle-btn");
     const quietContent = document.getElementById("quiet-content");
