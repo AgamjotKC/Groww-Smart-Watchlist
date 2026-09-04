@@ -26,4 +26,14 @@ public class WatchlistServiceTest {
         boolean duplicateResult = watchlistService.addStock(2L, "TCS");
         assertFalse(duplicateResult);
     }
+
+    @Test
+    void testRemoveStockFromWatchlist() {
+        watchlistService.addStock(3L, "INFY");
+        boolean removed = watchlistService.removeStock(3L, "INFY");
+        assertTrue(removed);
+
+        boolean removeAgain = watchlistService.removeStock(3L, "INFY");
+        assertFalse(removeAgain);
+    }
 }
