@@ -13,7 +13,7 @@ public class ScoringEngineService {
     private static final double WEIGHT_PROXIMITY = 0.20;
 
     public double calculateVolatilityZScore(List<Double> historicalPrices, double currentPrice) {
-        if (historicalPrices == null || historicalPrices.isEmpty()) {
+        if (historicalPrices == null || historicalPrices.size() < 2) {
             return 0.0;
         }
         double sum = 0.0;

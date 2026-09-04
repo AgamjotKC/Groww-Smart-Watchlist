@@ -43,4 +43,16 @@ public class ScoringEngineServiceTest {
         double surgeRatio = scoringEngineService.calculateVolumeSurgeRatio(historicalVolumes, currentVolume);
         assertEquals(3.0, surgeRatio, 0.1);
     }
+
+    @Test
+    void testBrandNewListingNoHistoricalWindow() {
+        List<Double> emptyHistory = List.of();
+        double currentPrice = 500.0;
+
+        double zScore = scoringEngineService.calculateVolatilityZScore(emptyHistory, currentPrice);
+        assertEquals(0.0, zScore);
+
+        double compositeScore = scoringEngineService.calculateCompositeScore(emptyHistory, currentPrice, List.of(), 10000L, 600.0, 400.0, false);
+        assertTrue(Double.isFinite(compositeScore));
+    }
 }
