@@ -1,5 +1,6 @@
 async function loadCatchUpCard() {
     const moversList = document.getElementById("movers-list");
+    const quietBtn = document.getElementById("quiet-toggle-btn");
     if (!moversList) return;
 
     try {
@@ -22,9 +23,23 @@ async function loadCatchUpCard() {
             `;
             moversList.appendChild(row);
         });
+
+        if (quietBtn) {
+            quietBtn.innerText = `${data.quietCount} quiet ${data.quietCount === 1 ? "stock" : "stocks"}`;
+        }
     } catch (e) {
         console.error("Failed to load delta", e);
     }
 }
 
-document.addEventListener("DOMContentLoaded", loadCatchUpCard);
+document.addEventListener("DOMContentLoaded", () => {
+    loadCatchUpCard();
+
+    const quietBtn = document.getElementById("quiet-toggle-btn");
+    const quietContent = document.getElementById("quiet-content");
+    if (quietBtn && quietContent) {
+        quietBtn.addEventListener("click", () => {
+            quietContent.classList.toggle("hidden");
+        });
+    }
+});
