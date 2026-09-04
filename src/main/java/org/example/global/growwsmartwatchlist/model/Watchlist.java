@@ -1,14 +1,26 @@
 package org.example.global.growwsmartwatchlist.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "watchlists")
 public class Watchlist {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
     private String name;
     private LocalDateTime lastSeenAt;
+
+    @Transient
     private List<String> symbols = new ArrayList<>();
 
     public Watchlist() {}
