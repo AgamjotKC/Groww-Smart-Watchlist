@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Nifty Tech Leaders",
+    "description": "Top Indian IT & Technology behemoths driving enterprise transformation.",
+    "symbols": ["TCS", "INFY", "WIPRO", "HCLTECH", "TECHM"]
+  },
+  {
+    "name": "Banking & Financial Giants",
+    "description": "Leading private and public sector banking majors.",
+    "symbols": ["HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK"]
+  },
+  {
+    "name": "Green Energy & Clean Tech",
+    "description": "Companies spearheading India's renewable transition.",
+    "symbols": ["RELIANCE", "TATAPOWER", "ADANIGREEN", "SUZLON", "NTPC"]
+  }
+]
