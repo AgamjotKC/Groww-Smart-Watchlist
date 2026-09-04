@@ -15,6 +15,8 @@ import java.util.List;
 @Service
 public class DeltaComputationService {
 
+    private static final double ACTIVE_THRESHOLD = 1.5;
+
     @Autowired
     private WatchlistStockRepository watchlistStockRepository;
 
@@ -29,7 +31,9 @@ public class DeltaComputationService {
                 .filter(ws -> ws.getWatchlistId().equals(watchlistId))
                 .toList();
 
-        List<ActiveMover> movers = new ArrayList<>();
+        List<ActiveMover> activeMovers = new ArrayList<>();
+        int quietCount = 0;
+
         for (WatchlistStock ws : watchlistStocks) {
             String symbol = ws.getSymbol();
             List<StockTick> ticks = marketDataFeed.getTicksForSymbol(symbol);
@@ -52,11 +56,16 @@ public class DeltaComputationService {
             ActiveMover mover = new ActiveMover(
                     symbol, symbol, currentPrice, 0.0, score, "Volume Surge", false, ""
             );
-            movers.add(mover);
+
+            if (score >= ACTIVE_THRESHOLD) {
+                activeMovers.add(mover);
+            } else {
+                quietCount++;
+            }
         }
 
-        movers.sort((a, b) -> Double.compare(b.getCompositeScore(), a.getCompositeScore()));
+        activeMovers.sort((a, b) -> Double.compare(b.getCompositeScore(), a.getCompositeScore()));
 
-        return new DeltaResponse(watchlistId, anchorMode != null ? anchorMode : "SINCE_LAST_SEEN", movers, 0);
+        return new DeltaResponse(watchlistId, anchorMode != null ? anchorMode : "SINCE_LAST_SEEN", activeMovers, quietCount);
     }
 }
