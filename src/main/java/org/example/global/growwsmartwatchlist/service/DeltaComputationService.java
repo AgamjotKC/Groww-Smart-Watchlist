@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class DeltaComputationService {
 
-    private static final double ACTIVE_THRESHOLD = 1.5;
+    private static final double ACTIVE_THRESHOLD = 0.85;
 
     @Autowired
     private WatchlistStockRepository watchlistStockRepository;
