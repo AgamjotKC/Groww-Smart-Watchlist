@@ -7,6 +7,8 @@ import java.util.List;
 @Service
 public class ScoringEngineService {
 
+    private static final double EPSILON = 1e-6;
+
     public double calculateVolatilityZScore(List<Double> historicalPrices, double currentPrice) {
         if (historicalPrices == null || historicalPrices.isEmpty()) {
             return 0.0;
@@ -23,10 +25,6 @@ public class ScoringEngineService {
         }
         double stdDev = Math.sqrt(varianceSum / historicalPrices.size());
 
-        if (stdDev == 0) {
-            return 0.0;
-        }
-
-        return Math.abs(currentPrice - mean) / stdDev;
+        return Math.abs(currentPrice - mean) / (stdDev + EPSILON);
     }
 }
