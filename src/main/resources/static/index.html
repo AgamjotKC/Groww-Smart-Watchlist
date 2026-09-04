@@ -71,11 +71,11 @@
             </div>
         </aside>
 
-        <!-- Primary Catch-Up Surface -->
+        <!-- Primary Surface with Summary Banner & Watchlist -->
         <section class="content-area">
-            <div class="card catchup-card">
-                <!-- Catch-Up Header Controls -->
-                <div class="catchup-header">
+            <!-- Top Summary Card Banner -->
+            <div class="summary-banner-card">
+                <div class="summary-banner-header">
                     <div>
                         <h1 class="catchup-title">Catch-Up <span class="badge-beta">NSE Live</span></h1>
                         <p class="catchup-subtitle" id="last-seen-text">Surfacing real market diffs since your last session</p>
@@ -87,7 +87,32 @@
                     </div>
                 </div>
 
-                <!-- Active Movers Grid / List -->
+                <!-- Executive Synthesis Briefing Paragraph -->
+                <div id="synthesis-box" class="synthesis-box">
+                    <p id="synthesis-text" class="synthesis-text">Analyzing market momentum and session diffs...</p>
+                </div>
+
+                <!-- 2 Metric Stat Cards: Active vs Quiet -->
+                <div class="summary-stats-grid">
+                    <div class="stat-card active-stat">
+                        <div class="stat-icon">🚀</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="summary-active-count">0</span>
+                            <span class="stat-label">Active Movers (Above Volatility Threshold)</span>
+                        </div>
+                    </div>
+                    <div class="stat-card quiet-stat">
+                        <div class="stat-icon">🤫</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="summary-quiet-count">0</span>
+                            <span class="stat-label">Quiet Stocks (Normal Churn)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Movers Section -->
+            <div class="card catchup-card" style="margin-top: 20px;">
                 <div class="section-divider">
                     <span>ACTIVE MOVERS (<span id="active-count">0</span>)</span>
                 </div>
@@ -102,7 +127,7 @@
                         <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
-                        <span id="quiet-count-text">0 quiet stocks</span>
+                        <span id="quiet-count-text">▾ Quiet Stocks (0) — Normal Churn</span>
                     </button>
                     <div id="quiet-content" class="quiet-content hidden">
                         <p class="quiet-note">Low-volatility stocks with quiet price changes recede below noise threshold.</p>

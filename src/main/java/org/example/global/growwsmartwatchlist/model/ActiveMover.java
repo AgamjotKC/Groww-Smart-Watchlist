@@ -4,6 +4,8 @@ public class ActiveMover {
     private String symbol;
     private String companyName;
     private double currentPrice;
+    private double anchorPrice;
+    private String anchorTimeString;
     private double deltaPercent;
     private double compositeScore;
     private String primaryDriver;
@@ -17,13 +19,15 @@ public class ActiveMover {
 
     public ActiveMover() {}
 
-    public ActiveMover(String symbol, String companyName, double currentPrice, double deltaPercent,
-                       double compositeScore, String primaryDriver, boolean catalystFlag, String catalystBadgeText,
-                       String newsUrl, double volumeSurgeRatio, double volatilityZScore,
-                       double week52High, double week52Low) {
+    public ActiveMover(String symbol, String companyName, double currentPrice, double anchorPrice,
+                       String anchorTimeString, double deltaPercent, double compositeScore, String primaryDriver,
+                       boolean catalystFlag, String catalystBadgeText, String newsUrl,
+                       double volumeSurgeRatio, double volatilityZScore, double week52High, double week52Low) {
         this.symbol = symbol;
         this.companyName = companyName;
         this.currentPrice = currentPrice;
+        this.anchorPrice = anchorPrice;
+        this.anchorTimeString = anchorTimeString;
         this.deltaPercent = deltaPercent;
         this.compositeScore = compositeScore;
         this.primaryDriver = primaryDriver;
@@ -44,6 +48,12 @@ public class ActiveMover {
 
     public double getCurrentPrice() { return currentPrice; }
     public void setCurrentPrice(double currentPrice) { this.currentPrice = currentPrice; }
+
+    public double getAnchorPrice() { return anchorPrice; }
+    public void setAnchorPrice(double anchorPrice) { this.anchorPrice = anchorPrice; }
+
+    public String getAnchorTimeString() { return anchorTimeString; }
+    public void setAnchorTimeString(String anchorTimeString) { this.anchorTimeString = anchorTimeString; }
 
     public double getDeltaPercent() { return deltaPercent; }
     public void setDeltaPercent(double deltaPercent) { this.deltaPercent = deltaPercent; }

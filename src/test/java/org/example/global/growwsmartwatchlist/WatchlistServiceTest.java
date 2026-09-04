@@ -18,7 +18,7 @@ public class WatchlistServiceTest {
 
     @Test
     void testAddStockToWatchlist() {
-        boolean result = watchlistService.addStock(1L, "RELIANCE");
+        boolean result = watchlistService.addStock(99L, "SUZLON");
         assertTrue(result);
     }
 

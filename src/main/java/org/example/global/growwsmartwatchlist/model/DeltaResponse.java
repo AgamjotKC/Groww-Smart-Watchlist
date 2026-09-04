@@ -7,6 +7,8 @@ public class DeltaResponse {
     private Long watchlistId;
     private String anchorMode;
     private String lastSeenAt;
+    private String synthesisSummary;
+    private boolean isDelayedFallback;
     private List<ActiveMover> activeMovers = new ArrayList<>();
     private int quietCount;
     private List<ActiveMover> quietStocks = new ArrayList<>();
@@ -29,6 +31,12 @@ public class DeltaResponse {
 
     public String getLastSeenAt() { return lastSeenAt; }
     public void setLastSeenAt(String lastSeenAt) { this.lastSeenAt = lastSeenAt; }
+
+    public String getSynthesisSummary() { return synthesisSummary; }
+    public void setSynthesisSummary(String synthesisSummary) { this.synthesisSummary = synthesisSummary; }
+
+    public boolean isDelayedFallback() { return isDelayedFallback; }
+    public void setDelayedFallback(boolean delayedFallback) { isDelayedFallback = delayedFallback; }
 
     public List<ActiveMover> getActiveMovers() { return activeMovers; }
     public void setActiveMovers(List<ActiveMover> activeMovers) { this.activeMovers = activeMovers; }
