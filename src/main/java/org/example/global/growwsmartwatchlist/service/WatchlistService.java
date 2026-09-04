@@ -1,6 +1,8 @@
 package org.example.global.growwsmartwatchlist.service;
 
+import org.example.global.growwsmartwatchlist.model.Watchlist;
 import org.example.global.growwsmartwatchlist.model.WatchlistStock;
+import org.example.global.growwsmartwatchlist.repository.WatchlistRepository;
 import org.example.global.growwsmartwatchlist.repository.WatchlistStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,21 @@ import java.util.Optional;
 public class WatchlistService {
 
     @Autowired
+    private WatchlistRepository watchlistRepository;
+
+    @Autowired
     private WatchlistStockRepository watchlistStockRepository;
+
+    public Watchlist createWatchlist(Long userId, String name) {
+        if (userId == null || name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("User ID and Watchlist name must be provided");
+        }
+        Watchlist watchlist = new Watchlist();
+        watchlist.setUserId(userId);
+        watchlist.setName(name.trim());
+        watchlist.setLastSeenAt(LocalDateTime.now());
+        return watchlistRepository.save(watchlist);
+    }
 
     public boolean addStock(Long watchlistId, String symbol) {
         if (watchlistId == null || symbol == null || symbol.trim().isEmpty()) {
