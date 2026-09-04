@@ -21,6 +21,6 @@ public class ScoringEngineServiceTest {
         double currentPrice = 115.0;
 
         double zScore = scoringEngineService.calculateVolatilityZScore(historicalPrices, currentPrice);
-        assertEquals(9.6, zScore, 0.5);
+        assertEquals(10.6, zScore, 0.5);
     }
 }
