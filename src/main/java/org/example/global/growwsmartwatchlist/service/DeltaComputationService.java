@@ -83,7 +83,6 @@ public class DeltaComputationService {
                     companyName = q.companyName;
                 }
 
-                // Simulate price trajectory for scoring window
                 histPrices = List.of(refPrice, (refPrice + currentPrice) / 2.0, currentPrice);
                 histVolumes = List.of((long)(volume * 0.8), (long)(volume * 0.9), volume);
             } else {
@@ -114,12 +113,19 @@ public class DeltaComputationService {
             Optional<Catalyst> catalystOpt = catalystService.getLatestCatalyst(symbol);
             String catalystText = catalystOpt.map(c -> c.getEventType() + ": " + c.getTitle()).orElse("");
 
+            double volatilityZScore = scoringEngineService.calculateVolatilityZScore(histPrices, currentPrice);
+            double volumeSurgeRatio = scoringEngineService.calculateVolumeSurgeRatio(histVolumes, volume);
+
             double score = scoringEngineService.calculateCompositeScore(
                     histPrices, currentPrice, histVolumes, volume, week52High, week52Low, hasCatalyst
             );
 
+            String newsUrl = "https://www.google.com/finance/quote/" + symbol.toUpperCase() + ":NSE";
+
             ActiveMover mover = new ActiveMover(
-                    symbol, companyName, currentPrice, deltaPercent, score, "Volume Surge", hasCatalyst, catalystText
+                    symbol, companyName, currentPrice, deltaPercent, score, "Volume Surge",
+                    hasCatalyst, catalystText, newsUrl, volumeSurgeRatio, volatilityZScore,
+                    week52High, week52Low
             );
 
             if (score >= ACTIVE_THRESHOLD || Math.abs(deltaPercent) >= 0.5) {

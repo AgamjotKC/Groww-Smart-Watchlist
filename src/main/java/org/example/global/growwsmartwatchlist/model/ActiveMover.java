@@ -6,14 +6,21 @@ public class ActiveMover {
     private double currentPrice;
     private double deltaPercent;
     private double compositeScore;
-    private String primaryDriver; // e.g. "Volume Surge 3.2x", "52w High Breakout"
+    private String primaryDriver;
     private boolean catalystFlag;
     private String catalystBadgeText;
+    private String newsUrl;
+    private double volumeSurgeRatio;
+    private double volatilityZScore;
+    private double week52High;
+    private double week52Low;
 
     public ActiveMover() {}
 
     public ActiveMover(String symbol, String companyName, double currentPrice, double deltaPercent,
-                       double compositeScore, String primaryDriver, boolean catalystFlag, String catalystBadgeText) {
+                       double compositeScore, String primaryDriver, boolean catalystFlag, String catalystBadgeText,
+                       String newsUrl, double volumeSurgeRatio, double volatilityZScore,
+                       double week52High, double week52Low) {
         this.symbol = symbol;
         this.companyName = companyName;
         this.currentPrice = currentPrice;
@@ -22,6 +29,11 @@ public class ActiveMover {
         this.primaryDriver = primaryDriver;
         this.catalystFlag = catalystFlag;
         this.catalystBadgeText = catalystBadgeText;
+        this.newsUrl = newsUrl;
+        this.volumeSurgeRatio = volumeSurgeRatio;
+        this.volatilityZScore = volatilityZScore;
+        this.week52High = week52High;
+        this.week52Low = week52Low;
     }
 
     public String getSymbol() { return symbol; }
@@ -47,4 +59,19 @@ public class ActiveMover {
 
     public String getCatalystBadgeText() { return catalystBadgeText; }
     public void setCatalystBadgeText(String catalystBadgeText) { this.catalystBadgeText = catalystBadgeText; }
+
+    public String getNewsUrl() { return newsUrl; }
+    public void setNewsUrl(String newsUrl) { this.newsUrl = newsUrl; }
+
+    public double getVolumeSurgeRatio() { return volumeSurgeRatio; }
+    public void setVolumeSurgeRatio(double volumeSurgeRatio) { this.volumeSurgeRatio = volumeSurgeRatio; }
+
+    public double getVolatilityZScore() { return volatilityZScore; }
+    public void setVolatilityZScore(double volatilityZScore) { this.volatilityZScore = volatilityZScore; }
+
+    public double getWeek52High() { return week52High; }
+    public void setWeek52High(double week52High) { this.week52High = week52High; }
+
+    public double getWeek52Low() { return week52Low; }
+    public void setWeek52Low(double week52Low) { this.week52Low = week52Low; }
 }

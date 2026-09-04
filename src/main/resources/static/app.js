@@ -40,44 +40,61 @@ async function loadCatchUpCard() {
                 : `Diff computed relative to today's NSE market open baseline`;
         }
 
-        // Render Active Movers
+        // Render Active Movers with Breakdown Metrics
         moversList.innerHTML = "";
         const movers = data.activeMovers || [];
         if (activeCount) activeCount.innerText = movers.length;
 
         if (movers.length === 0) {
             moversList.innerHTML = `
-                <div class="mover-row" style="color: var(--text-muted); font-size: 13px; text-align: center; justify-content: center; padding: 24px;">
-                    Your watchlist is empty or has no active movers. Use the search bar above to search & add any NSE company!
+                <div class="mover-card" style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 24px;">
+                    Your watchlist has no active movers above threshold. Search & add any NSE company above!
                 </div>`;
         } else {
             movers.forEach(mover => {
-                const row = document.createElement("div");
-                row.className = "mover-row";
+                const card = document.createElement("div");
+                card.className = "mover-card";
 
                 const formattedDelta = (mover.deltaPercent >= 0 ? "+" : "") + mover.deltaPercent.toFixed(2) + "%";
                 const deltaClass = mover.deltaPercent >= 0 ? "delta-positive" : "delta-negative";
 
-                const catalystHtml = mover.catalystBadgeText
-                    ? `<span class="catalyst-tag">${mover.catalystBadgeText}</span>`
-                    : "";
-
                 const companySubtitle = mover.companyName && mover.companyName !== mover.symbol
                     ? `<span class="company-name">${mover.companyName}</span>`
-                    : "";
+                    : `<span class="company-name">${mover.symbol} Equities</span>`;
 
-                row.innerHTML = `
-                    <div class="mover-left">
-                        <span class="symbol">${mover.symbol}</span>
-                        ${companySubtitle}
+                const catalystHtml = mover.catalystBadgeText
+                    ? `<a href="${mover.newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link">📰 ${mover.catalystBadgeText} ↗</a>`
+                    : `<a href="${mover.newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link" style="background:#f1f3f6; color:#4b5563;">📰 Read Latest Headlines & Filings on NSE ↗</a>`;
+
+                const volSurge = mover.volumeSurgeRatio ? mover.volumeSurgeRatio.toFixed(1) : "1.0";
+                const zScore = mover.volatilityZScore ? mover.volatilityZScore.toFixed(2) : "0.00";
+                const low52 = mover.week52Low ? Math.round(mover.week52Low) : Math.round(mover.currentPrice * 0.85);
+                const high52 = mover.week52High ? Math.round(mover.week52High) : Math.round(mover.currentPrice * 1.15);
+
+                card.innerHTML = `
+                    <div class="mover-top">
+                        <div class="mover-info">
+                            <span class="symbol">${mover.symbol}</span>
+                            ${companySubtitle}
+                        </div>
+                        <div class="mover-price-box">
+                            <span class="price">₹${mover.currentPrice.toFixed(2)}</span>
+                            <span class="delta-badge ${deltaClass}">${formattedDelta}</span>
+                        </div>
+                    </div>
+
+                    <div class="metrics-bar">
+                        <span class="chip chip-score">Score: ${mover.compositeScore.toFixed(2)}</span>
+                        <span class="chip chip-volume">⚡ ${volSurge}x Vol</span>
+                        <span class="chip chip-zscore">📊 Z: ${zScore}</span>
+                        <span class="chip chip-range">52W: ₹${low52} - ₹${high52}</span>
+                    </div>
+
+                    <div class="catalyst-box">
                         ${catalystHtml}
                     </div>
-                    <div class="mover-right">
-                        <span class="price">₹${mover.currentPrice.toFixed(2)}</span>
-                        <span class="delta-badge ${deltaClass}">${formattedDelta}</span>
-                    </div>
                 `;
-                moversList.appendChild(row);
+                moversList.appendChild(card);
             });
         }
 
