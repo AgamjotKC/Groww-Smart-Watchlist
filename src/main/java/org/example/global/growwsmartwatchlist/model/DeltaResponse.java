@@ -10,6 +10,7 @@ public class DeltaResponse {
     private String synthesisSummary;
     private boolean isDelayedFallback;
     private boolean isMarketOpen;
+    private String marketStatusText;
     private List<ActiveMover> activeMovers = new ArrayList<>();
     private int quietCount;
     private List<ActiveMover> quietStocks = new ArrayList<>();
@@ -40,7 +41,10 @@ public class DeltaResponse {
     public void setDelayedFallback(boolean delayedFallback) { isDelayedFallback = delayedFallback; }
 
     public boolean isMarketOpen() { return isMarketOpen; }
-    public void setMarketOpen(boolean marketOpen) { isMarketOpen = marketOpen; }
+    public void setMarketOpen(boolean marketOpen) { this.isMarketOpen = marketOpen; }
+
+    public String getMarketStatusText() { return marketStatusText; }
+    public void setMarketStatusText(String marketStatusText) { this.marketStatusText = marketStatusText; }
 
     public List<ActiveMover> getActiveMovers() { return activeMovers; }
     public void setActiveMovers(List<ActiveMover> activeMovers) { this.activeMovers = activeMovers; }

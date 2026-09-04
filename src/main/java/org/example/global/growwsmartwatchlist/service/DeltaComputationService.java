@@ -13,12 +13,13 @@ import org.example.global.growwsmartwatchlist.repository.WatchlistStockRepositor
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,25 @@ public class DeltaComputationService {
     @Autowired
     private CatalystService catalystService;
 
+    @Autowired(required = false)
+    private Clock clock = Clock.system(ZoneId.of("Asia/Kolkata"));
+
+    public void setClock(Clock clock) {
+        this.clock = clock;
+        if (nseMarketDataProvider != null) {
+            nseMarketDataProvider.setClock(clock);
+        }
+    }
+
+    public boolean isMarketOpen() {
+        ZonedDateTime nowKolkata = ZonedDateTime.now(clock.withZone(ZoneId.of("Asia/Kolkata")));
+        DayOfWeek dayKolkata = nowKolkata.getDayOfWeek();
+        LocalTime timeKolkata = nowKolkata.toLocalTime();
+
+        return (dayKolkata != DayOfWeek.SATURDAY && dayKolkata != DayOfWeek.SUNDAY)
+                && (!timeKolkata.isBefore(LocalTime.of(9, 15)) && timeKolkata.isBefore(LocalTime.of(15, 30)));
+    }
+
     public DeltaResponse computeRankedDelta(Long watchlistId, String anchorMode) {
         String normalizedAnchor = (anchorMode != null && anchorMode.equalsIgnoreCase("SINCE_OPEN")) ? "SINCE_OPEN" : "SINCE_LAST_SEEN";
 
@@ -53,7 +73,7 @@ public class DeltaComputationService {
                 .toList();
 
         Optional<Watchlist> watchlistOpt = watchlistRepository.findById(watchlistId);
-        LocalDateTime lastSeen = watchlistOpt.map(Watchlist::getLastSeenAt).orElse(LocalDateTime.now().minusHours(24));
+        LocalDateTime lastSeen = watchlistOpt.map(Watchlist::getLastSeenAt).orElse(LocalDateTime.now(clock).minusHours(24));
         String lastSeenIso = lastSeen.toString();
         String anchorTimeString = lastSeen.format(DateTimeFormatter.ofPattern("HH:mm"));
 
@@ -63,6 +83,11 @@ public class DeltaComputationService {
 
         double sumDelta = 0.0;
         int totalTracked = 0;
+
+        // Ensure market provider syncs clock state
+        if (nseMarketDataProvider != null) {
+            nseMarketDataProvider.setClock(clock);
+        }
 
         for (WatchlistStock ws : watchlistStocks) {
             String symbol = ws.getSymbol();
@@ -171,7 +196,7 @@ public class DeltaComputationService {
             if (isActiveMover) {
                 activeMovers.add(mover);
             } else {
-                quietStocks.add(mover); // Mild intraday drift (+0.39%, -0.69%) lands in Quiet Stocks
+                quietStocks.add(mover);
             }
         }
 
@@ -202,19 +227,16 @@ public class DeltaComputationService {
             );
         }
 
-        LocalTime nowKolkata = LocalTime.now(ZoneId.of("Asia/Kolkata"));
-        DayOfWeek dayKolkata = LocalDate.now(ZoneId.of("Asia/Kolkata")).getDayOfWeek();
-
-        boolean isMarketOpen = (dayKolkata != DayOfWeek.SATURDAY && dayKolkata != DayOfWeek.SUNDAY)
-                            && (!nowKolkata.isBefore(LocalTime.of(9, 15)) && nowKolkata.isBefore(LocalTime.of(15, 30)));
+        boolean marketOpen = isMarketOpen();
+        String marketStatusText = marketOpen ? "🟢 Market Open • Live NSE Feed" : "Closed — Last close 15:30 IST";
 
         DeltaResponse response = new DeltaResponse(watchlistId, normalizedAnchor, activeMovers, quietStocks.size(), quietStocks);
         response.setLastSeenAt(lastSeenIso);
         response.setSynthesisSummary(synthesisText);
         response.setDelayedFallback(isAnyDelayed);
-        response.setMarketOpen(isMarketOpen);
+        response.setMarketOpen(marketOpen);
+        response.setMarketStatusText(marketStatusText);
 
         return response;
     }
 }
-
