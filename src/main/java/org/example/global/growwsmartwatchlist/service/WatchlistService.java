@@ -31,6 +31,13 @@ public class WatchlistService {
         return watchlistRepository.save(watchlist);
     }
 
+    public Optional<Watchlist> getWatchlist(Long id) {
+        if (id == null) {
+            return Optional.empty();
+        }
+        return watchlistRepository.findById(id);
+    }
+
     public boolean addStock(Long watchlistId, String symbol) {
         if (watchlistId == null || symbol == null || symbol.trim().isEmpty()) {
             return false;
