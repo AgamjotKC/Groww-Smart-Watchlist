@@ -26,7 +26,7 @@ public class WatchlistService {
     public void initDefaultWatchlist() {
         if (watchlistRepository.count() == 0) {
             Watchlist defaultList = createWatchlist(1L, "Primary Catch-Up List");
-            List<String> seedStocks = List.of("RELIANCE", "TCS", "INFY", "TATAMOTORS", "HDFCBANK", "ZOMATO");
+            List<String> seedStocks = List.of("RELIANCE", "TCS", "INFY", "HDFCBANK", "WIPRO", "TATAMOTORS", "ZOMATO", "SBIN");
             for (String sym : seedStocks) {
                 addStock(defaultList.getId(), sym);
             }

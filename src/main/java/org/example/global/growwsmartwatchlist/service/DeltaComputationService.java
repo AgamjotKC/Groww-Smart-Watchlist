@@ -68,6 +68,7 @@ public class DeltaComputationService {
             double refPrice;
             double deltaPercent;
             long volume;
+            long adv20;
             double week52High;
             double week52Low;
             String companyName = symbol;
@@ -81,6 +82,7 @@ public class DeltaComputationService {
                 refPrice = "SINCE_OPEN".equals(normalizedAnchor) ? q.openPrice : q.prevClose;
                 deltaPercent = refPrice > 0 ? ((currentPrice - refPrice) / refPrice) * 100.0 : q.deltaPercent;
                 volume = q.volume;
+                adv20 = q.averageDailyVolume20Day > 0 ? q.averageDailyVolume20Day : nseMarketDataProvider.getBaselineAdv(symbol);
                 week52High = q.week52High;
                 week52Low = q.week52Low;
                 if (q.companyName != null && !q.companyName.isBlank()) {
@@ -104,6 +106,7 @@ public class DeltaComputationService {
 
                 currentPrice = ticks.get(ticks.size() - 1).getPrice();
                 volume = ticks.get(ticks.size() - 1).getVolume();
+                adv20 = nseMarketDataProvider.getBaselineAdv(symbol);
 
                 if ("SINCE_OPEN".equals(normalizedAnchor)) {
                     refPrice = ticks.get(0).getPrice();
@@ -130,7 +133,7 @@ public class DeltaComputationService {
             String catalystText = catalystOpt.map(c -> c.getEventType() + ": " + c.getTitle()).orElse("");
 
             double volatilityZScore = scoringEngineService.calculateVolatilityZScore(histPrices, currentPrice);
-            double volumeSurgeRatio = scoringEngineService.calculateVolumeSurgeRatio(histVolumes, volume);
+            double volumeSurgeRatio = scoringEngineService.calculateVolumeSurgeRatio(volume, adv20);
 
             double score = scoringEngineService.calculateCompositeScore(
                     histPrices, currentPrice, histVolumes, volume, week52High, week52Low, hasCatalyst
@@ -144,24 +147,32 @@ public class DeltaComputationService {
                     week52High, week52Low
             );
 
-            // Calibrated Active vs Quiet Partitioning Logic
-            boolean near52w = (week52High > 0 && currentPrice >= 0.99 * week52High);
-            boolean isActiveMover = (Math.abs(deltaPercent) >= 0.8 && volumeSurgeRatio >= 1.4)
-                                 || (volatilityZScore >= 1.5)
+            // Calibrated Active vs Quiet Threshold:
+            // 1. Math.abs(deltaPercent) >= 1.2 (Meaningful price swing)
+            // 2. volumeSurgeRatio >= 2.0 (True institutional volume surge)
+            // 3. volatilityZScore >= 2.0 with non-trivial price move (>= 0.8%)
+            // 4. near52w is true (currentPrice >= 0.98 * week52High)
+            // 5. hasCatalyst with material filing move (>= 0.8%)
+            boolean near52w = (week52High > 0 && currentPrice >= 0.98 * week52High);
+            boolean isMaterialFiling = hasCatalyst && catalystText != null && !catalystText.isEmpty();
+
+            boolean isActiveMover = (Math.abs(deltaPercent) >= 1.2)
+                                 || (volumeSurgeRatio >= 2.0)
+                                 || (volatilityZScore >= 2.0 && Math.abs(deltaPercent) >= 0.8)
                                  || near52w
-                                 || hasCatalyst;
+                                 || (isMaterialFiling && Math.abs(deltaPercent) >= 0.8);
 
             if (isActiveMover) {
                 activeMovers.add(mover);
             } else {
-                quietStocks.add(mover); // Flat stocks (+0.00%, low vol) MUST land here cleanly
+                quietStocks.add(mover); // Mild intraday drift (+0.39%, -0.69%) lands in Quiet Stocks
             }
         }
 
         activeMovers.sort((a, b) -> Double.compare(b.getCompositeScore(), a.getCompositeScore()));
         quietStocks.sort((a, b) -> Double.compare(Math.abs(b.getDeltaPercent()), Math.abs(a.getDeltaPercent())));
 
-        // Generate Dynamic Executive Synthesis Summary String
+        // Dynamic Executive Synthesis Summary String
         double avgDelta = totalTracked > 0 ? sumDelta / totalTracked : 0.0;
         String toneStr = avgDelta >= 0.5 ? "bullish" : (avgDelta <= -0.5 ? "bearish" : "neutral");
         String formattedAvg = (avgDelta >= 0 ? "+" : "") + String.format("%.2f", avgDelta) + "%";
@@ -193,3 +204,4 @@ public class DeltaComputationService {
         return response;
     }
 }
+

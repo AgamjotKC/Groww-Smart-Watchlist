@@ -31,6 +31,12 @@ public class ScoringEngineService {
         return Math.abs(currentPrice - mean) / (stdDev + EPSILON);
     }
 
+    public double calculateVolumeSurgeRatio(long currentDayVolume, long averageDailyVolume20Day) {
+        double baseline = Math.max((double) averageDailyVolume20Day, 1.0);
+        double ratio = (double) currentDayVolume / baseline;
+        return Math.min(8.0, Math.max(0.1, ratio));
+    }
+
     public double calculateVolumeSurgeRatio(List<Long> historicalVolumes, long currentVolume) {
         if (historicalVolumes == null || historicalVolumes.isEmpty()) {
             return 1.0;
@@ -39,9 +45,14 @@ public class ScoringEngineService {
         for (long v : historicalVolumes) {
             sum += v;
         }
-        double baselineAverage = sum / historicalVolumes.size();
+        double baselineAvg = sum / historicalVolumes.size();
+        if (baselineAvg <= 0) return 1.0;
 
-        return currentVolume / (baselineAverage + EPSILON);
+        double estimatedDailyBaseline = baselineAvg * Math.max(historicalVolumes.size(), 75);
+        double ratio = (double) currentVolume / (historicalVolumes.size() > 10 ? estimatedDailyBaseline : baselineAvg);
+
+        // Clamp volume surge ratio between 0.1x and 8.0x for realistic market bounds
+        return Math.min(8.0, Math.max(0.1, ratio));
     }
 
     public double calculateLevelProximityScore(double currentPrice, double week52High, double week52Low) {
@@ -66,3 +77,4 @@ public class ScoringEngineService {
         return (zScore * WEIGHT_Z_SCORE) + (volumeRatio * WEIGHT_VOLUME_RATIO) + (proximityScore * WEIGHT_PROXIMITY) + catalystBoost;
     }
 }
+

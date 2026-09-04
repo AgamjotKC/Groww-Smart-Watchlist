@@ -1,12 +1,6 @@
 [
   { "symbol": "RELIANCE", "eventType": "Dividend", "title": "Board Recommends Final Dividend of ₹10 per Share", "timestamp": "2026-09-04T09:30:00Z" },
-  { "symbol": "INFY", "eventType": "Filing", "title": "Strategic Cloud & AI Contract Win $450M", "timestamp": "2026-09-04T09:45:00Z" },
   { "symbol": "TATAMOTORS", "eventType": "Board Meeting", "title": "Board Meeting Scheduled for Q3 Financial Results & EV Demerger", "timestamp": "2026-09-04T10:00:00Z" },
-  { "symbol": "TCS", "eventType": "Dividend", "title": "Interim Dividend ₹18/share Record Date Announced", "timestamp": "2026-09-04T10:15:00Z" },
   { "symbol": "HDFCBANK", "eventType": "Earnings", "title": "Q3 Net Interest Income Rises 16% YoY", "timestamp": "2026-09-04T10:30:00Z" },
-  { "symbol": "SBIN", "eventType": "Board Meeting", "title": "Board to Consider Raising ₹10,000 Cr via Infrastructure Bonds", "timestamp": "2026-09-04T10:45:00Z" },
-  { "symbol": "ICICIBANK", "eventType": "Earnings", "title": "Q3 Net Profit Jumps 14.5% to ₹11,200 Cr", "timestamp": "2026-09-04T11:00:00Z" },
-  { "symbol": "BHARTIARTL", "eventType": "Filing", "title": "5G Subscriber Addition Crosses 50 Million Milestone", "timestamp": "2026-09-04T11:15:00Z" },
-  { "symbol": "SUZLON", "eventType": "Filing", "title": "Secures 400 MW Wind Power Order from Leading IPP", "timestamp": "2026-09-04T11:30:00Z" },
-  { "symbol": "ZOMATO", "eventType": "Earnings", "title": "Blinkit Gross Order Value Surges 90% YoY", "timestamp": "2026-09-04T11:45:00Z" }
+  { "symbol": "ICICIBANK", "eventType": "Earnings", "title": "Q3 Net Profit Jumps 14.5% to ₹11,200 Cr", "timestamp": "2026-09-04T11:00:00Z" }
 ]
