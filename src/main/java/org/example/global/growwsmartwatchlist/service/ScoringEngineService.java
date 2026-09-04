@@ -8,6 +8,8 @@ import java.util.List;
 public class ScoringEngineService {
 
     private static final double EPSILON = 1e-6;
+    private static final double WEIGHT_Z_SCORE = 0.65;
+    private static final double WEIGHT_VOLUME_RATIO = 0.35;
 
     public double calculateVolatilityZScore(List<Double> historicalPrices, double currentPrice) {
         if (historicalPrices == null || historicalPrices.isEmpty()) {
@@ -46,9 +48,6 @@ public class ScoringEngineService {
         double zScore = calculateVolatilityZScore(historicalPrices, currentPrice);
         double volumeRatio = calculateVolumeSurgeRatio(historicalVolumes, currentVolume);
 
-        double weightZ = 0.5;
-        double weightV = 0.5;
-
-        return (zScore * weightZ) + (volumeRatio * weightV);
+        return (zScore * WEIGHT_Z_SCORE) + (volumeRatio * WEIGHT_VOLUME_RATIO);
     }
 }
