@@ -15,26 +15,29 @@ public class WatchlistController {
     @Autowired
     private WatchlistService watchlistService;
 
+    public static class CreateWatchlistDto {
+        private Long userId;
+        private String name;
+
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
+
+    public static class AddStockDto {
+        private String symbol;
+
+        public String getSymbol() { return symbol; }
+        public void setSymbol(String symbol) { this.symbol = symbol; }
+    }
+
     @PostMapping
-    public ResponseEntity<Watchlist> createWatchlist(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String name,
-            @RequestBody(required = false) Map<String, Object> body) {
-
-        Long reqUserId = userId;
-        String reqName = name;
-
-        if (body != null) {
-            if (reqUserId == null && body.containsKey("userId")) {
-                reqUserId = Long.valueOf(body.get("userId").toString());
-            }
-            if (reqName == null && body.containsKey("name")) {
-                reqName = body.get("name").toString();
-            }
-        }
-
-        if (reqUserId == null) reqUserId = 1L;
-        if (reqName == null) reqName = "My Watchlist";
+    public ResponseEntity<Watchlist> createWatchlist(@RequestBody(required = false) CreateWatchlistDto dto,
+                                                     @RequestParam(required = false) Long userId,
+                                                     @RequestParam(required = false) String name) {
+        Long reqUserId = dto != null && dto.getUserId() != null ? dto.getUserId() : (userId != null ? userId : 1L);
+        String reqName = dto != null && dto.getName() != null ? dto.getName() : (name != null ? name : "My Watchlist");
 
         Watchlist watchlist = watchlistService.createWatchlist(reqUserId, reqName);
         return ResponseEntity.ok(watchlist);
@@ -48,15 +51,10 @@ public class WatchlistController {
     }
 
     @PostMapping("/{id}/stocks")
-    public ResponseEntity<Map<String, Object>> addStock(
-            @PathVariable Long id,
-            @RequestParam(required = false) String symbol,
-            @RequestBody(required = false) Map<String, String> body) {
-
-        String reqSymbol = symbol;
-        if (body != null && body.containsKey("symbol")) {
-            reqSymbol = body.get("symbol");
-        }
+    public ResponseEntity<Map<String, Object>> addStock(@PathVariable Long id,
+                                                        @RequestBody(required = false) AddStockDto dto,
+                                                        @RequestParam(required = false) String symbol) {
+        String reqSymbol = dto != null && dto.getSymbol() != null ? dto.getSymbol() : symbol;
 
         boolean success = watchlistService.addStock(id, reqSymbol);
         return ResponseEntity.ok(Map.of("success", success, "watchlistId", id, "symbol", reqSymbol != null ? reqSymbol.toUpperCase() : ""));
