@@ -21,7 +21,7 @@ import java.util.Optional;
 @Service
 public class DeltaComputationService {
 
-    private static final double ACTIVE_THRESHOLD = 0.85;
+    private static final double ACTIVE_THRESHOLD = 1.0;
 
     @Autowired
     private WatchlistRepository watchlistRepository;
