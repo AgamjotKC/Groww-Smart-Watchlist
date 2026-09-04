@@ -143,7 +143,9 @@ public class DeltaComputationService {
                     histPrices, currentPrice, histVolumes, volume, week52High, week52Low, hasCatalyst
             );
 
-            String newsUrl = "https://www.google.com/finance/quote/" + symbol.toUpperCase() + ":NSE";
+            String newsUrl = catalystOpt.map(Catalyst::getNewsUrl)
+                    .filter(u -> u != null && !u.isBlank())
+                    .orElse("https://www.google.com/finance/quote/" + symbol.toUpperCase() + ":NSE");
 
             ActiveMover mover = new ActiveMover(
                     symbol, companyName, currentPrice, refPrice, anchorTimeString, deltaPercent, score, "Volume Surge",
