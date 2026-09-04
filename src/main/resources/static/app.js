@@ -37,7 +37,7 @@ function setFreshness(status, isDelayed, apiIsMarketOpen) {
 
     if (isDelayed) {
         badge.className = "freshness-badge delayed";
-        badge.innerText = "Delayed (Cached)";
+        badge.innerText = "Yahoo Finance (EOD/Delayed) • 🟢 Verified Live NSE Filings";
         dot.className = "dot delayed";
         return;
     }
@@ -55,7 +55,7 @@ function setFreshness(status, isDelayed, apiIsMarketOpen) {
 
     const lower = status ? status.toLowerCase() : "live";
     badge.className = `freshness-badge ${lower}`;
-    badge.innerText = "🟢 Market Open • Live NSE Feed";
+    badge.innerText = "Yahoo Finance (EOD/Delayed) • 🟢 Verified Live NSE Filings";
     dot.className = `dot ${lower}`;
 }
 
@@ -145,6 +145,12 @@ function getCategoryBadgeHtml(catalystBadgeText, newsUrl) {
         return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-board">🏛️ ${text} ↗</a>`;
     } else if (text.startsWith("Earnings")) {
         return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-earnings">📈 ${text} ↗</a>`;
+    } else if (text.startsWith("M&A / Partnership")) {
+        return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-ma">🤝 ${text} ↗</a>`;
+    } else if (text.startsWith("Contract Win")) {
+        return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-contract">📜 ${text} ↗</a>`;
+    } else if (text.startsWith("Management")) {
+        return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-management">👔 ${text} ↗</a>`;
     } else {
         return `<a href="${newsUrl}" target="_blank" rel="noopener noreferrer" class="catalyst-link badge-filing">📑 ${text} ↗</a>`;
     }

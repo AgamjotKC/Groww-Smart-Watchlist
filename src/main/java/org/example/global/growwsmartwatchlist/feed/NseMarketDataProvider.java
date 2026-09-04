@@ -155,7 +155,7 @@ public class NseMarketDataProvider {
             return Optional.of(cached);
         }
 
-        // Attempt live fetch if market is open (or first initialization)
+        // 1. Attempt live fetch from NSE official API
         try {
             ensureSessionCookies();
             String encodedSymbol = URLEncoder.encode(cleanSymbol, StandardCharsets.UTF_8);
@@ -206,13 +206,83 @@ public class NseMarketDataProvider {
                     }
                 }
             } else {
-                log.warn("NSE quote API call for symbol {} returned HTTP status {} (or Access Denied). Serving stale/fallback cache.", cleanSymbol, response.statusCode());
+                log.warn("NSE quote API call for symbol {} returned HTTP status {} (or Access Denied). Attempting Yahoo Finance fallback.", cleanSymbol, response.statusCode());
             }
         } catch (Exception e) {
-            log.warn("NSE quote API call failed for symbol {}: {}. Serving stale/fallback cache.", cleanSymbol, e.getMessage());
+            log.warn("NSE quote API call failed for symbol {}: {}. Attempting Yahoo Finance fallback.", cleanSymbol, e.getMessage());
         }
 
-        // Fallback quote generation if external call failed and no cache exists
+        // 2. Secondary live fetch from Yahoo Finance chart feed if NSE direct API is blocked by Akamai WAF
+        try {
+            String yahooSymbol = cleanSymbol + ".NS";
+            String url = "https://query1.finance.yahoo.com/v8/finance/chart/" + yahooSymbol + "?range=1d&interval=5m";
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .timeout(Duration.ofSeconds(4))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 && response.body() != null) {
+                JsonNode root = objectMapper.readTree(response.body());
+                JsonNode resultNode = root.path("chart").path("result");
+
+                if (resultNode.isArray() && !resultNode.isEmpty()) {
+                    JsonNode resultObj = resultNode.get(0);
+                    JsonNode meta = resultObj.path("meta");
+                    double currentPrice = meta.path("regularMarketPrice").asDouble(0.0);
+
+                    // Extract latest valid non-null close from indicators.quote[0].close as fallback or split validation
+                    JsonNode quoteArray = resultObj.path("indicators").path("quote");
+                    double latestCloseFromIndicator = 0.0;
+                    if (quoteArray.isArray() && !quoteArray.isEmpty()) {
+                        JsonNode closes = quoteArray.get(0).path("close");
+                        if (closes.isArray() && !closes.isEmpty()) {
+                            for (int i = closes.size() - 1; i >= 0; i--) {
+                                JsonNode closeVal = closes.get(i);
+                                if (closeVal != null && !closeVal.isNull() && closeVal.isNumber() && closeVal.asDouble() > 0) {
+                                    latestCloseFromIndicator = closeVal.asDouble();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (currentPrice <= 0 || (latestCloseFromIndicator > 0 && Math.abs(currentPrice - latestCloseFromIndicator) / latestCloseFromIndicator > 0.5)) {
+                        if (latestCloseFromIndicator > 0) {
+                            currentPrice = latestCloseFromIndicator;
+                        }
+                    }
+
+                    double prevClose = meta.path("chartPreviousClose").asDouble(currentPrice);
+                    double deltaPercent = meta.path("regularMarketChangePercent").asDouble(0.0);
+                    long volume = meta.path("regularMarketVolume").asLong(1_000_000L);
+                    long adv20 = getBaselineAdv(cleanSymbol);
+                    double week52High = meta.path("fiftyTwoWeekHigh").asDouble(currentPrice * 1.15);
+                    double week52Low = meta.path("fiftyTwoWeekLow").asDouble(currentPrice * 0.85);
+                    String companyName = meta.path("longName").asText(meta.path("shortName").asText(cleanSymbol));
+
+                    List<Double> candlePrices = List.of(prevClose, (prevClose + currentPrice) / 2.0, currentPrice);
+                    List<Long> candleVolumes = List.of((long)(volume * 0.3), (long)(volume * 0.4), volume);
+                    double openPrice = candlePrices.get(0);
+
+                    if (currentPrice > 0) {
+                        NseQuoteCache quote = new NseQuoteCache(cleanSymbol, companyName, currentPrice, prevClose,
+                                openPrice, deltaPercent, volume, adv20, week52High, week52Low, candlePrices, candleVolumes, false);
+                        cache.put(cleanSymbol, quote);
+                        log.info("Successfully fetched live Yahoo Finance chart quote for {}: price={}, change=%{}", cleanSymbol, currentPrice, deltaPercent);
+                        return Optional.of(quote);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Yahoo Finance quote API call failed for symbol {}: {}.", cleanSymbol, e.getMessage());
+        }
+
+        // Fallback quote generation if external calls failed and no cache exists
         if (cached != null) {
             cached.isCachedFallback = true;
             return Optional.of(cached);
@@ -229,7 +299,7 @@ public class NseMarketDataProvider {
             case "WIPRO" -> 495.50;
             case "INFY" -> 1820.00;
             case "HDFCBANK" -> 1640.00;
-            case "RELIANCE" -> 2850.50;
+            case "RELIANCE" -> 1322.00; // Post 1:1 bonus adjusted live price level
             case "TATAMOTORS" -> 980.00;
             case "ZOMATO" -> 245.00;
             case "SBIN" -> 820.00;
@@ -238,7 +308,7 @@ public class NseMarketDataProvider {
 
         double deltaPercent = switch (cleanSymbol) {
             case "HDFCBANK" -> 1.38;
-            case "RELIANCE" -> 1.56;
+            case "RELIANCE" -> 1.50;
             case "TCS" -> -0.45;
             case "WIPRO" -> -0.20;
             case "INFY" -> 0.35;

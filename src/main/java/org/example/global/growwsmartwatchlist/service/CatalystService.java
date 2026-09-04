@@ -102,20 +102,19 @@ public class CatalystService {
                     JsonNode announcement = root.get(0);
                     
                     // Directly map response category/subject fields without free-text keyword guessing
-                    String category = announcement.path("category").asText(announcement.path("subject").asText("Filing"));
-                    String subject = announcement.path("subject").asText(category);
-                    String desc = announcement.path("desc").asText(subject);
+                    String desc = announcement.path("desc").asText(announcement.path("subject").asText(""));
+                    String attchmntText = announcement.path("attchmntText").asText("");
 
-                    String eventType = mapNseCategoryToEventType(category, subject);
+                    String eventType = normalizeCategory(desc, attchmntText);
 
                     String attchmnt = announcement.path("attchmntFile").asText("");
                     String newsUrl = (!attchmnt.isBlank()) 
                             ? "https://nsearchives.nseindia.com/corporate/" + attchmnt 
                             : "https://www.nseindia.com/get-quotes/equity?symbol=" + cleanSymbol + "#announcements";
 
-                    Catalyst catalyst = new Catalyst(cleanSymbol, eventType, desc, newsUrl, Instant.now());
+                    Catalyst catalyst = new Catalyst(cleanSymbol, eventType, desc.isBlank() ? "Official Corporate Disclosure" : desc, newsUrl, Instant.now());
                     cache.put(cleanSymbol, new CachedCatalyst(catalyst));
-                    log.info("Fetched live NSE announcement for {}: category='{}', eventType='{}'", cleanSymbol, category, eventType);
+                    log.info("Fetched live NSE announcement for {}: eventType='{}', desc='{}'", cleanSymbol, eventType, desc);
                     return Optional.of(catalyst);
                 }
             } else {
@@ -131,21 +130,21 @@ public class CatalystService {
 
         // Default NSE corporate announcement fallback
         String fallbackUrl = "https://www.nseindia.com/get-quotes/equity?symbol=" + cleanSymbol + "#announcements";
-        Catalyst defaultCat = new Catalyst(cleanSymbol, "Filing", "Official Corporate Filings & Announcements on NSE", fallbackUrl, Instant.now());
+        Catalyst defaultCat = new Catalyst(cleanSymbol, "Corporate Update", "Official Corporate Filings & Announcements on NSE", fallbackUrl, Instant.now());
         cache.put(cleanSymbol, new CachedCatalyst(defaultCat));
         return Optional.of(defaultCat);
     }
 
-    private String mapNseCategoryToEventType(String category, String subject) {
-        String combined = (category + " " + subject).toLowerCase();
-        if (combined.contains("dividend") || combined.contains("payout") || combined.contains("corporate action")) {
-            return "Dividend";
-        } else if (combined.contains("result") || combined.contains("financial") || combined.contains("earnings") || combined.contains("q1") || combined.contains("q2") || combined.contains("q3") || combined.contains("q4")) {
-            return "Earnings";
-        } else if (combined.contains("board meeting") || combined.contains("meeting")) {
-            return "Board Meeting";
-        } else {
-            return "Filing";
-        }
+    public String normalizeCategory(String desc, String text) {
+        String blob = ((desc != null ? desc : "") + " " + (text != null ? text : "")).toLowerCase();
+        
+        if (blob.contains("dividend") || blob.contains("distribution")) return "Dividend";
+        if (blob.contains("result") || blob.contains("financial") || blob.contains("profit") || blob.contains("earning") || blob.contains("earnings")) return "Earnings";
+        if (blob.contains("board meeting") || blob.contains("meeting")) return "Board Meeting";
+        if (blob.contains("acquisition") || blob.contains("partner") || blob.contains("merger") || blob.contains("demerger") || blob.contains("joint venture")) return "M&A / Partnership";
+        if (blob.contains("order") || blob.contains("contract") || blob.contains("award") || blob.contains("agreement")) return "Contract Win";
+        if (blob.contains("resignation") || blob.contains("appointment") || blob.contains("director")) return "Management";
+        
+        return "Corporate Update";
     }
 }
