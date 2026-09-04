@@ -1,12 +1,14 @@
 package org.example.global.growwsmartwatchlist;
 
+import org.example.global.growwsmartwatchlist.model.Watchlist;
 import org.example.global.growwsmartwatchlist.service.WatchlistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.time.LocalDateTime;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class WatchlistServiceTest {
@@ -35,5 +37,16 @@ public class WatchlistServiceTest {
 
         boolean removeAgain = watchlistService.removeStock(3L, "INFY");
         assertFalse(removeAgain);
+    }
+
+    @Test
+    void testGetWatchlistUpdatesLastSeenAt() throws InterruptedException {
+        Watchlist created = watchlistService.createWatchlist(100L, "Tech Delta");
+        LocalDateTime initialLastSeen = created.getLastSeenAt();
+
+        Thread.sleep(20);
+
+        Watchlist fetched = watchlistService.getWatchlist(created.getId()).orElseThrow();
+        assertNotNull(fetched.getLastSeenAt());
     }
 }
