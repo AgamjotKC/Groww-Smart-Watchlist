@@ -16,4 +16,24 @@ public class WatchlistStock {
     private Long watchlistId;
     private String symbol;
     private LocalDateTime addedAt;
+
+    public WatchlistStock() {}
+
+    public WatchlistStock(Long watchlistId, String symbol, LocalDateTime addedAt) {
+        this.watchlistId = watchlistId;
+        this.symbol = symbol;
+        this.addedAt = addedAt;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getWatchlistId() { return watchlistId; }
+    public void setWatchlistId(Long watchlistId) { this.watchlistId = watchlistId; }
+
+    public String getSymbol() { return symbol; }
+    public void setSymbol(String symbol) { this.symbol = symbol; }
+
+    public LocalDateTime getAddedAt() { return addedAt; }
+    public void setAddedAt(LocalDateTime addedAt) { this.addedAt = addedAt; }
 }
