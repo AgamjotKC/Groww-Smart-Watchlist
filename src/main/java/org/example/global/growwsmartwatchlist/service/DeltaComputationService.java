@@ -2,6 +2,7 @@ package org.example.global.growwsmartwatchlist.service;
 
 import org.example.global.growwsmartwatchlist.feed.MarketDataFeed;
 import org.example.global.growwsmartwatchlist.model.ActiveMover;
+import org.example.global.growwsmartwatchlist.model.Catalyst;
 import org.example.global.growwsmartwatchlist.model.DeltaResponse;
 import org.example.global.growwsmartwatchlist.model.StockTick;
 import org.example.global.growwsmartwatchlist.model.Watchlist;
@@ -33,6 +34,9 @@ public class DeltaComputationService {
 
     @Autowired
     private ScoringEngineService scoringEngineService;
+
+    @Autowired
+    private CatalystService catalystService;
 
     public DeltaResponse computeRankedDelta(Long watchlistId, String anchorMode) {
         String normalizedAnchor = (anchorMode != null && anchorMode.equalsIgnoreCase("SINCE_OPEN")) ? "SINCE_OPEN" : "SINCE_LAST_SEEN";
@@ -72,12 +76,16 @@ public class DeltaComputationService {
             List<Double> histPrices = ticks.stream().map(StockTick::getPrice).toList();
             List<Long> histVolumes = ticks.stream().map(StockTick::getVolume).toList();
 
+            boolean hasCatalyst = catalystService.hasCatalyst(symbol);
+            Optional<Catalyst> catalystOpt = catalystService.getLatestCatalyst(symbol);
+            String catalystText = catalystOpt.map(c -> c.getEventType() + ": " + c.getTitle()).orElse("");
+
             double score = scoringEngineService.calculateCompositeScore(
-                    histPrices, currentPrice, histVolumes, currentVolume, currentPrice * 1.15, currentPrice * 0.85, false
+                    histPrices, currentPrice, histVolumes, currentVolume, currentPrice * 1.15, currentPrice * 0.85, hasCatalyst
             );
 
             ActiveMover mover = new ActiveMover(
-                    symbol, symbol, currentPrice, deltaPercent, score, "Volume Surge", false, ""
+                    symbol, symbol, currentPrice, deltaPercent, score, "Volume Surge", hasCatalyst, catalystText
             );
 
             if (score >= ACTIVE_THRESHOLD) {
