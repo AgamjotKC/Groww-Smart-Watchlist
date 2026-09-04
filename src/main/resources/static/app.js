@@ -12,10 +12,12 @@ async function loadCatchUpCard() {
             row.className = "mover-row";
 
             const formattedDelta = (mover.deltaPercent >= 0 ? "+" : "") + mover.deltaPercent.toFixed(2) + "%";
+            const deltaClass = mover.deltaPercent >= 0 ? "delta-positive" : "delta-negative";
+
             row.innerHTML = `
                 <span class="symbol">${mover.symbol}</span>
                 <span class="price">₹${mover.currentPrice.toFixed(2)}</span>
-                <span class="delta">${formattedDelta}</span>
+                <span class="delta ${deltaClass}">${formattedDelta}</span>
                 <span class="badge">${mover.catalystBadgeText || ""}</span>
             `;
             moversList.appendChild(row);
