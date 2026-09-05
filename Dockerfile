@@ -2,14 +2,12 @@
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /app
 
-# Copy pom.xml and dependencies configuration
+# Copy pom.xml
 COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
 
 # Copy source code and build executable JAR
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Stage 2: Minimal Lightweight Runtime Image
 FROM eclipse-temurin:17-jre-alpine
