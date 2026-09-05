@@ -151,7 +151,6 @@ public class NseMarketDataProvider {
         // Market-hours gate: If market is closed, freeze prices and do not poll external NSE API
         if (!isMarketOpen() && cached != null) {
             log.info("Market is closed. Serving frozen 15:30 close quote for {}", cleanSymbol);
-            cached.isCachedFallback = false;
             return Optional.of(cached);
         }
 
@@ -214,7 +213,11 @@ public class NseMarketDataProvider {
 
         // 2. Secondary live fetch from Yahoo Finance chart feed if NSE direct API is blocked by Akamai WAF
         try {
-            String yahooSymbol = cleanSymbol + ".NS";
+            String yahooSymbol = switch (cleanSymbol) {
+                case "LTIM" -> "LTI.NS";
+                case "M&M" -> "M%26M.NS";
+                default -> cleanSymbol + ".NS";
+            };
             String url = "https://query1.finance.yahoo.com/v8/finance/chart/" + yahooSymbol + "?range=1d&interval=5m";
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -235,7 +238,6 @@ public class NseMarketDataProvider {
                     JsonNode meta = resultObj.path("meta");
                     double currentPrice = meta.path("regularMarketPrice").asDouble(0.0);
 
-                    // Extract latest valid non-null close from indicators.quote[0].close as fallback or split validation
                     JsonNode quoteArray = resultObj.path("indicators").path("quote");
                     double latestCloseFromIndicator = 0.0;
                     if (quoteArray.isArray() && !quoteArray.isEmpty()) {
@@ -265,9 +267,25 @@ public class NseMarketDataProvider {
                     double week52Low = meta.path("fiftyTwoWeekLow").asDouble(currentPrice * 0.85);
                     String companyName = meta.path("longName").asText(meta.path("shortName").asText(cleanSymbol));
 
-                    List<Double> candlePrices = List.of(prevClose, (prevClose + currentPrice) / 2.0, currentPrice);
+                    double openPrice = prevClose;
+                    List<Double> candlePrices = new ArrayList<>();
+                    if (quoteArray.isArray() && !quoteArray.isEmpty()) {
+                        JsonNode closes = quoteArray.get(0).path("close");
+                        if (closes.isArray() && !closes.isEmpty()) {
+                            for (JsonNode closeVal : closes) {
+                                if (closeVal != null && !closeVal.isNull() && closeVal.isNumber() && closeVal.asDouble() > 0) {
+                                    candlePrices.add(closeVal.asDouble());
+                                }
+                            }
+                        }
+                    }
+                    if (candlePrices.isEmpty()) {
+                        candlePrices = List.of(prevClose, (prevClose + currentPrice) / 2.0, currentPrice);
+                    } else {
+                        openPrice = candlePrices.get(0);
+                    }
+
                     List<Long> candleVolumes = List.of((long)(volume * 0.3), (long)(volume * 0.4), volume);
-                    double openPrice = candlePrices.get(0);
 
                     if (currentPrice > 0) {
                         NseQuoteCache quote = new NseQuoteCache(cleanSymbol, companyName, currentPrice, prevClose,
@@ -279,7 +297,7 @@ public class NseMarketDataProvider {
                 }
             }
         } catch (Exception e) {
-            log.warn("Yahoo Finance quote API call failed for symbol {}: {}.", cleanSymbol, e.getMessage());
+            log.warn("Yahoo Finance quote API call failed for symbol {}: {}", cleanSymbol, e.getMessage());
         }
 
         // Fallback quote generation if external calls failed and no cache exists
@@ -293,16 +311,66 @@ public class NseMarketDataProvider {
         return Optional.of(fallbackQuote);
     }
 
+    // Static approximate fallback prices captured on 2026-09-04 for offline demo continuity only.
     private NseQuoteCache createFallbackQuote(String cleanSymbol) {
         double currentPrice = switch (cleanSymbol) {
             case "TCS" -> 4120.00;
             case "WIPRO" -> 495.50;
             case "INFY" -> 1820.00;
+            case "HCLTECH" -> 1780.00;
+            case "TECHM" -> 1596.90;
+            case "LTIM" -> 5120.00;
+            case "PERSISTENT" -> 5643.00;
             case "HDFCBANK" -> 1640.00;
-            case "RELIANCE" -> 1322.00; // Post 1:1 bonus adjusted live price level
-            case "TATAMOTORS" -> 980.00;
-            case "ZOMATO" -> 245.00;
+            case "ICICIBANK" -> 1230.00;
             case "SBIN" -> 820.00;
+            case "KOTAKBANK" -> 1780.00;
+            case "AXISBANK" -> 1180.00;
+            case "INDUSINDBK" -> 1420.00;
+            case "RELIANCE" -> 1322.00;
+            case "TATAPOWER" -> 410.00;
+            case "ADANIGREEN" -> 1780.00;
+            case "SUZLON" -> 75.00;
+            case "NTPC" -> 405.00;
+            case "POWERGRID" -> 335.00;
+            case "TATAMOTORS" -> 980.00;
+            case "MARUTI" -> 12400.00;
+            case "M&M" -> 2750.00;
+            case "BAJAJ-AUTO" -> 9600.00;
+            case "HEROMOTOCO" -> 5200.00;
+            case "TVSMOTOR" -> 2400.00;
+            case "EICHERMOT" -> 4800.00;
+            case "SUNPHARMA" -> 1820.00;
+            case "DRREDDY" -> 6800.00;
+            case "CIPLA" -> 1550.00;
+            case "DIVISLAB" -> 4900.00;
+            case "APOLLOHOSP" -> 6700.00;
+            case "LUPIN" -> 2150.00;
+            case "MANKIND" -> 2450.00;
+            case "ITC" -> 490.00;
+            case "HINDUNILVR" -> 2820.00;
+            case "NESTLEIND" -> 2520.00;
+            case "BRITANNIA" -> 5800.00;
+            case "TATACONSUM" -> 1180.00;
+            case "DABUR" -> 630.00;
+            case "GODREJCP" -> 1480.00;
+            case "TATASTEEL" -> 155.00;
+            case "JSWSTEEL" -> 940.00;
+            case "HINDALCO" -> 680.00;
+            case "VEDL" -> 460.00;
+            case "COALINDIA" -> 490.00;
+            case "NMDC" -> 230.00;
+            case "PNB" -> 115.00;
+            case "BANKBARODA" -> 250.00;
+            case "CANBK" -> 110.00;
+            case "UNIONBANK" -> 135.00;
+            case "INDIANB" -> 540.00;
+            case "DLF" -> 860.00;
+            case "LODHA" -> 1240.00;
+            case "GODREJPROP" -> 2950.00;
+            case "OBEROIRLTY" -> 1850.00;
+            case "PHOENIXLTD" -> 3650.00;
+            case "ZOMATO" -> 245.00;
             default -> 1000.00;
         };
 

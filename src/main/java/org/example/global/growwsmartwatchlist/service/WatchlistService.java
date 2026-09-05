@@ -48,13 +48,15 @@ public class WatchlistService {
         if (id == null) {
             return Optional.empty();
         }
-        Optional<Watchlist> watchlistOpt = watchlistRepository.findById(id);
-        if (watchlistOpt.isPresent()) {
-            Watchlist watchlist = watchlistOpt.get();
-            watchlist.setLastSeenAt(LocalDateTime.now());
-            watchlistRepository.save(watchlist);
-        }
-        return watchlistOpt;
+        return watchlistRepository.findById(id);
+    }
+
+    public void touchLastSeen(Long id) {
+        if (id == null) return;
+        watchlistRepository.findById(id).ifPresent(w -> {
+            w.setLastSeenAt(LocalDateTime.now());
+            watchlistRepository.save(w);
+        });
     }
 
     public boolean addStock(Long watchlistId, String symbol) {
@@ -79,6 +81,23 @@ public class WatchlistService {
         Optional<WatchlistStock> stockOpt = watchlistStockRepository.findByWatchlistIdAndSymbol(watchlistId, formattedSymbol);
         if (stockOpt.isPresent()) {
             watchlistStockRepository.delete(stockOpt.get());
+            return true;
+        }
+        return false;
+    }
+
+    public List<Watchlist> getAllWatchlists() {
+        return watchlistRepository.findAll();
+    }
+
+    @Transactional
+    public boolean deleteWatchlist(Long watchlistId) {
+        if (watchlistId == null || watchlistId == 1L) {
+            return false; // Protect primary default watchlist
+        }
+        if (watchlistRepository.existsById(watchlistId)) {
+            watchlistStockRepository.deleteByWatchlistId(watchlistId);
+            watchlistRepository.deleteById(watchlistId);
             return true;
         }
         return false;

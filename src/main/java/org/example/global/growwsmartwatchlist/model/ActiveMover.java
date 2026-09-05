@@ -16,6 +16,7 @@ public class ActiveMover {
     private double volatilityZScore;
     private double week52High;
     private double week52Low;
+    private String crossoverBadge;
 
     public ActiveMover() {}
 
@@ -84,4 +85,7 @@ public class ActiveMover {
 
     public double getWeek52Low() { return week52Low; }
     public void setWeek52Low(double week52Low) { this.week52Low = week52Low; }
+
+    public String getCrossoverBadge() { return crossoverBadge; }
+    public void setCrossoverBadge(String crossoverBadge) { this.crossoverBadge = crossoverBadge; }
 }

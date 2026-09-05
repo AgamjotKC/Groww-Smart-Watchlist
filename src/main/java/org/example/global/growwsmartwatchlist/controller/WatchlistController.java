@@ -32,6 +32,11 @@ public class WatchlistController {
         public void setSymbol(String symbol) { this.symbol = symbol; }
     }
 
+    @GetMapping
+    public ResponseEntity<java.util.List<Watchlist>> getAllWatchlists() {
+        return ResponseEntity.ok(watchlistService.getAllWatchlists());
+    }
+
     @PostMapping
     public ResponseEntity<Watchlist> createWatchlist(@RequestBody(required = false) CreateWatchlistDto dto,
                                                      @RequestParam(required = false) Long userId,
@@ -50,6 +55,12 @@ public class WatchlistController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteWatchlist(@PathVariable Long id) {
+        boolean success = watchlistService.deleteWatchlist(id);
+        return ResponseEntity.ok(Map.of("success", success, "watchlistId", id));
+    }
+
     @PostMapping("/{id}/stocks")
     public ResponseEntity<Map<String, Object>> addStock(@PathVariable Long id,
                                                         @RequestBody(required = false) AddStockDto dto,
@@ -58,6 +69,12 @@ public class WatchlistController {
 
         boolean success = watchlistService.addStock(id, reqSymbol);
         return ResponseEntity.ok(Map.of("success", success, "watchlistId", id, "symbol", reqSymbol != null ? reqSymbol.toUpperCase() : ""));
+    }
+
+    @DeleteMapping("/{id}/stocks/{symbol}")
+    public ResponseEntity<Map<String, Object>> removeStock(@PathVariable Long id, @PathVariable String symbol) {
+        boolean success = watchlistService.removeStock(id, symbol);
+        return ResponseEntity.ok(Map.of("success", success, "watchlistId", id, "symbol", symbol.toUpperCase()));
     }
 
     public static class LoadBasketDto {

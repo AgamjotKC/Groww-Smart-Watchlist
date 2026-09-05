@@ -63,11 +63,18 @@
             </div>
 
             <div class="nav-right">
+                <div class="demo-toggle-wrapper">
+                    <label class="switch">
+                        <input type="checkbox" id="demo-mode-toggle" />
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="demo-toggle-text">Demo Mode</span>
+                </div>
                 <div class="status-indicator">
                     <span id="freshness-dot" class="dot live"></span>
                     <span id="freshness-badge" class="freshness-badge live">Yahoo Finance (EOD/Delayed) • 🟢 Verified Live NSE Filings</span>
                 </div>
-                <div class="user-avatar">
+                <div class="user-avatar" title="Agamjot Kaur">
                     <span>AG</span>
                 </div>
             </div>
@@ -80,10 +87,11 @@
         <aside class="sidebar">
             <div class="card sidebar-card">
                 <h3 class="section-title">My Watchlists</h3>
-                <div class="watchlist-selector">
-                    <select id="watchlist-select">
+                <div class="watchlist-selector" style="display: flex; gap: 6px; align-items: center;">
+                    <select id="watchlist-select" style="flex: 1;">
                         <option value="1">Primary Catch-Up List</option>
                     </select>
+                    <button id="delete-watchlist-btn" class="btn-icon-danger" title="Delete current watchlist" style="display: none; padding: 6px 10px; border-radius: 6px; border: 1px solid #fee2e2; background-color: #fef2f2; color: #dc2626; cursor: pointer; font-size: 13px;">🗑️</button>
                 </div>
                 <div class="create-watchlist-box">
                     <input type="text" id="new-watchlist-name" placeholder="New Watchlist Name..." />
@@ -102,6 +110,9 @@
 
         <!-- Primary Surface with Summary Banner & Watchlist -->
         <section class="content-area">
+            <!-- Data Alert / Stale Feed Banner Slot -->
+            <div id="data-alert-container"></div>
+
             <!-- Top Summary Card Banner -->
             <div class="summary-banner-card">
                 <div class="summary-banner-header">
@@ -142,8 +153,19 @@
 
             <!-- Active Movers Section -->
             <div class="card catchup-card" style="margin-top: 20px;">
-                <div class="section-divider">
-                    <span>ACTIVE MOVERS (<span id="active-count">0</span>)</span>
+                <div class="list-header-bar">
+                    <div class="section-divider-title">
+                        <span>ACTIVE MOVERS (<span id="active-count">0</span>)</span>
+                    </div>
+                    <div class="sort-wrapper">
+                        <label for="sort-select" class="sort-label">Sort by:</label>
+                        <select id="sort-select" class="groww-select">
+                            <option value="relevance" selected>Relevance Score ▾</option>
+                            <option value="change">% Change ▾</option>
+                            <option value="volume">Volume Surge ▾</option>
+                            <option value="name">Company Name (A-Z) ▾</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div id="movers-list" class="movers-list">
@@ -226,10 +248,10 @@
     <div id="toast-container" class="toast-container"></div>
 
     <footer class="footer">
-        <p>Groww Smart Watchlist — Live NSE Catch-Up Engine &bull; Code 2026</p>
+        <p>Groww Smart Watchlist — Live NSE Catch-Up Engine &bull; Created by Agamjot Kaur</p>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=202609051138"></script>
 </body>
 </html>
 

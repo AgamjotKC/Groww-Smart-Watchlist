@@ -1,17 +1,47 @@
 [
   {
     "name": "Nifty Tech Leaders",
-    "description": "Top Indian IT & Technology behemoths driving enterprise transformation.",
-    "symbols": ["TCS", "INFY", "WIPRO", "HCLTECH", "TECHM"]
+    "description": "Top Indian IT & Technology behemoths mirroring the Nifty IT Sectoral Index.",
+    "symbols": ["TCS", "INFY", "WIPRO", "HCLTECH", "TECHM", "LTIM", "PERSISTENT"]
   },
   {
     "name": "Banking & Financial Giants",
-    "description": "Leading private and public sector banking majors.",
-    "symbols": ["HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK"]
+    "description": "Leading private and public sector banking majors mirroring the Nifty Bank Sectoral Index.",
+    "symbols": ["HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK", "INDUSINDBK"]
   },
   {
     "name": "Green Energy & Clean Tech",
-    "description": "Companies spearheading India's renewable transition.",
-    "symbols": ["RELIANCE", "TATAPOWER", "ADANIGREEN", "SUZLON", "NTPC"]
+    "description": "Companies spearheading India's renewable energy transition mirroring the Nifty Energy Sectoral Index.",
+    "symbols": ["RELIANCE", "TATAPOWER", "ADANIGREEN", "SUZLON", "NTPC", "POWERGRID"]
+  },
+  {
+    "name": "Nifty Auto",
+    "description": "Top automobile and auto-ancillary manufacturers mirroring the Nifty Auto Sectoral Index.",
+    "symbols": ["TATAMOTORS", "MARUTI", "M&M", "BAJAJ-AUTO", "HEROMOTOCO", "TVSMOTOR", "EICHERMOT"]
+  },
+  {
+    "name": "Nifty Pharma",
+    "description": "Leading pharmaceutical and healthcare leaders mirroring the Nifty Pharma Sectoral Index.",
+    "symbols": ["SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "APOLLOHOSP", "LUPIN", "MANKIND"]
+  },
+  {
+    "name": "Nifty FMCG",
+    "description": "Top fast-moving consumer goods giants mirroring the Nifty FMCG Sectoral Index.",
+    "symbols": ["ITC", "HINDUNILVR", "NESTLEIND", "BRITANNIA", "TATACONSUM", "DABUR", "GODREJCP"]
+  },
+  {
+    "name": "Nifty Metal",
+    "description": "Major steel, aluminum, and mining producers mirroring the Nifty Metal Sectoral Index.",
+    "symbols": ["TATASTEEL", "JSWSTEEL", "HINDALCO", "VEDL", "COALINDIA", "NMDC"]
+  },
+  {
+    "name": "Nifty PSU Bank",
+    "description": "Public sector banking institutions mirroring the Nifty PSU Bank Sectoral Index.",
+    "symbols": ["SBIN", "PNB", "BANKBARODA", "CANBK", "UNIONBANK", "INDIANB"]
+  },
+  {
+    "name": "Nifty Realty",
+    "description": "Top real estate development majors mirroring the Nifty Realty Sectoral Index.",
+    "symbols": ["DLF", "LODHA", "GODREJPROP", "OBEROIRLTY", "PHOENIXLTD"]
   }
 ]

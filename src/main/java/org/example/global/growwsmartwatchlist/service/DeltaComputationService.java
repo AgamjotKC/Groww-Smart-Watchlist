@@ -51,6 +51,9 @@ public class DeltaComputationService {
     private CatalystService catalystService;
 
     @Autowired(required = false)
+    private TrendlineService trendlineService;
+
+    @Autowired(required = false)
     private Clock clock = Clock.system(ZoneId.of("Asia/Kolkata"));
 
     public void setClock(Clock clock) {
@@ -96,8 +99,6 @@ public class DeltaComputationService {
         for (WatchlistStock ws : watchlistStocks) {
             String symbol = ws.getSymbol();
 
-            log.info("[PRICE-FETCH-TRACE] Symbol '{}': Calling primary provider NseMarketDataProvider.fetchNseQuote(), fallback: MarketDataFeed (MockTickFeedProvider)", symbol);
-
             Optional<NseMarketDataProvider.NseQuoteCache> nseQuoteOpt = nseMarketDataProvider.fetchNseQuote(symbol);
 
             double currentPrice;
@@ -137,7 +138,6 @@ public class DeltaComputationService {
                         : q.candleVolumes;
 
             } else {
-                log.info("[PRICE-FETCH-TRACE] Symbol '{}': NseMarketDataProvider empty. Calling fallback MarketDataFeed.getTicksForSymbol()", symbol);
                 List<StockTick> ticks = marketDataFeed.getTicksForSymbol(symbol);
                 if (ticks.isEmpty()) continue;
 
@@ -186,6 +186,10 @@ public class DeltaComputationService {
                     week52High, week52Low
             );
 
+            if (trendlineService != null) {
+                trendlineService.detectCrossover(symbol).ifPresent(mover::setCrossoverBadge);
+            }
+
             boolean near52w = (week52High > 0 && currentPrice >= 0.98 * week52High);
             boolean isMaterialFiling = hasCatalyst && catalystText != null && !catalystText.isEmpty();
 
@@ -210,7 +214,9 @@ public class DeltaComputationService {
         String formattedAvg = (avgDelta >= 0 ? "+" : "") + String.format("%.2f", avgDelta) + "%";
 
         String synthesisText;
-        if (!activeMovers.isEmpty()) {
+        if (totalTracked == 0) {
+            synthesisText = "This watchlist is currently empty. Add stocks using the top search bar or select a Curated Basket to populate market diffs!";
+        } else if (!activeMovers.isEmpty()) {
             ActiveMover topMover = activeMovers.get(0);
             String moverDetail = topMover.getSymbol() + " (" + (topMover.getDeltaPercent() >= 0 ? "+" : "") + String.format("%.1f", topMover.getDeltaPercent()) + "%)";
             synthesisText = String.format(

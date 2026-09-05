@@ -7,8 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class ScoringEngineServiceTest {
@@ -54,5 +53,40 @@ public class ScoringEngineServiceTest {
 
         double compositeScore = scoringEngineService.calculateCompositeScore(emptyHistory, currentPrice, List.of(), 10000L, 600.0, 400.0, false);
         assertTrue(Double.isFinite(compositeScore));
+    }
+
+    @Test
+    void testCompositeScoreCatalystBoost() {
+        List<Double> histPrices = List.of(100.0, 101.0, 99.0);
+        List<Long> histVolumes = List.of(10000L, 10000L);
+
+        double scoreWithoutCatalyst = scoringEngineService.calculateCompositeScore(histPrices, 100.0, histVolumes, 10000L, 120.0, 80.0, false);
+        double scoreWithCatalyst = scoringEngineService.calculateCompositeScore(histPrices, 100.0, histVolumes, 10000L, 120.0, 80.0, true);
+
+        assertTrue(scoreWithCatalyst > scoreWithoutCatalyst);
+    }
+
+    @Test
+    void testCompositeScore52WeekHighProximityBoost() {
+        List<Double> histPrices = List.of(100.0, 101.0, 99.0);
+        List<Long> histVolumes = List.of(10000L, 10000L);
+
+        double scoreNearHigh = scoringEngineService.calculateCompositeScore(histPrices, 119.0, histVolumes, 10000L, 120.0, 80.0, false);
+        double scoreMidRange = scoringEngineService.calculateCompositeScore(histPrices, 100.0, histVolumes, 10000L, 120.0, 80.0, false);
+
+        assertTrue(scoreNearHigh > scoreMidRange);
+    }
+
+    @Test
+    void testNullHistoricalVolumesHandling() {
+        double surgeRatio = scoringEngineService.calculateVolumeSurgeRatio((List<Long>) null, 50000L);
+        assertEquals(1.0, surgeRatio);
+    }
+
+    @Test
+    void testZeroAdvHandling() {
+        List<Long> zeroVolumes = List.of(0L, 0L, 0L);
+        double surgeRatio = scoringEngineService.calculateVolumeSurgeRatio(zeroVolumes, 50000L);
+        assertEquals(1.0, surgeRatio);
     }
 }
