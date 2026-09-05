@@ -83,4 +83,17 @@ public class WatchlistService {
         }
         return false;
     }
+
+    @Transactional
+    public Watchlist loadBasketIntoWatchlist(Long watchlistId, List<String> symbols) {
+        if (watchlistId == null || symbols == null) return null;
+        watchlistStockRepository.deleteByWatchlistId(watchlistId);
+        for (String sym : symbols) {
+            if (sym != null && !sym.isBlank()) {
+                WatchlistStock stock = new WatchlistStock(watchlistId, sym.trim().toUpperCase(), LocalDateTime.now());
+                watchlistStockRepository.save(stock);
+            }
+        }
+        return watchlistRepository.findById(watchlistId).orElse(null);
+    }
 }

@@ -8,4 +8,5 @@ public interface WatchlistStockRepository extends JpaRepository<WatchlistStock, 
     boolean existsByWatchlistIdAndSymbol(Long watchlistId, String symbol);
     Optional<WatchlistStock> findByWatchlistIdAndSymbol(Long watchlistId, String symbol);
     void deleteByWatchlistIdAndSymbol(Long watchlistId, String symbol);
+    void deleteByWatchlistId(Long watchlistId);
 }

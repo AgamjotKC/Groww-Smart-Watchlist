@@ -400,12 +400,21 @@ async function loadBaskets() {
                 <div class="basket-desc">${basket.description}</div>
             `;
             div.addEventListener("click", async () => {
-                for (const sym of basket.symbols) {
-                    await addStockToWatchlist(sym);
+                try {
+                    const batchRes = await fetch(`/api/watchlists/${currentWatchlistId}/basket`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ symbols: basket.symbols })
+                    });
+                    if (batchRes.ok) {
+                        showToast(`Loaded <strong>${basket.name}</strong> into Catch-Up diff engine (${basket.symbols.length} stocks)`);
+                        await loadCatchUpCard();
+                    }
+                } catch (e) {
+                    // silent handling
                 }
             });
             container.appendChild(div);
-        });
     } catch (e) {
         // silent handling
     }

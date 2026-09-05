@@ -59,4 +59,19 @@ public class WatchlistController {
         boolean success = watchlistService.addStock(id, reqSymbol);
         return ResponseEntity.ok(Map.of("success", success, "watchlistId", id, "symbol", reqSymbol != null ? reqSymbol.toUpperCase() : ""));
     }
+
+    public static class LoadBasketDto {
+        private java.util.List<String> symbols;
+
+        public java.util.List<String> getSymbols() { return symbols; }
+        public void setSymbols(java.util.List<String> symbols) { this.symbols = symbols; }
+    }
+
+    @PostMapping("/{id}/basket")
+    public ResponseEntity<Map<String, Object>> loadBasket(@PathVariable Long id,
+                                                          @RequestBody LoadBasketDto dto) {
+        java.util.List<String> symbols = dto != null ? dto.getSymbols() : java.util.List.of();
+        watchlistService.loadBasketIntoWatchlist(id, symbols);
+        return ResponseEntity.ok(Map.of("success", true, "watchlistId", id, "count", symbols.size()));
+    }
 }
